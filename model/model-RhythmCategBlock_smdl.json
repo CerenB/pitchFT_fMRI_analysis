@@ -1,0 +1,57 @@
+{
+  "Name": "Rhythm Block design",
+  "Description": "contrasts for the rhythmic block design dataset",
+  "Input": {
+    "task": "RhythmCategBlock"
+  },
+  "Steps": [
+    {
+      "Level": "run",
+      "Model": {
+        "X": [
+          "trial_type.block_simple",
+          "trial_type.block_complex",
+          "trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"
+        ]
+      },
+      "AutoContrasts": [
+        "trial_type.block_simple",
+        "trial_type.block_complex" ,
+        ]
+    },
+    {
+      "Level": "subject",
+      "AutoContrasts": ["trial_type.block_simple", "trial_type.block_complex" ],
+      "Contrasts": [
+        {
+          "Name": "CategA_gt_CategB",
+          "ConditionList": [
+            "trial_type.block_simple", "trial_type.block_complex"
+          ],
+          "weights": [1, -1],
+          "type": "t"
+        },
+        {
+          "Name": "CategB_gt_CategA",
+          "ConditionList": [
+            "trial_type.block_simple", "trial_type.block_complex"
+          ],
+          "weights": [-1, 1],
+          "type": "t"
+        },
+        {
+          "Name": "AllCateg",
+          "ConditionList": [
+            "trial_type.block_simple", "trial_type.block_complex"
+          ],
+          "weights": [0.5, 0.5],
+          "type": "t"
+        }
+      ]
+    },
+    {
+      "Level": "dataset",
+      "AutoContrasts": ["trial_type.block_simple", "trial_type.block_complex", "CategA_gt_CategB", "CategB_gt_CategA","AllCateg"]
+    }
+  ]
+}
