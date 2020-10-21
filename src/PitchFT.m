@@ -23,6 +23,7 @@ bidsCopyRawFolder(opt, 0);
 bidsSTC(opt);
 idsSpatialPrepro(opt);
 bidsSmoothing(FWHM, opt);
+
 % bidsFFX('specifyAndEstimate', opt, FWHM, isMVPA);
 % bidsFFX('contrasts', opt, FWHM, isMVPA);
 
