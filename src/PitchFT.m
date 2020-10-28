@@ -19,9 +19,9 @@ checkDependencies();
 
 %% Run batches
 
-bidsCopyRawFolder(opt, 0);
+%bidsCopyRawFolder(opt, 0);
 bidsSTC(opt);
-idsSpatialPrepro(opt);
+bidsSpatialPrepro(opt);
 bidsSmoothing(FWHM, opt);
 
 % bidsFFX('specifyAndEstimate', opt, FWHM, isMVPA);
