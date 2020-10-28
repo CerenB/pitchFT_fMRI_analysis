@@ -29,11 +29,6 @@ function opt = getOptionPitchFT()
                            opt.dataDir, '..', 'derivatives', ...
                            'SPM12_CPPL', 'JOBS', opt.taskName);
 
-%     % specify the model file that contains the contrasts to compute
-%     opt.model.univariate.file =  ...
-%         fullfile(fileparts(mfilename('fullpath')), '..', ...
-%                  'model', 'model-RhythmCategBlock_smdl.json');
-
     opt.sliceOrder = [];
 
     opt.STC_referenceSlice = [];
