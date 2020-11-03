@@ -12,10 +12,10 @@ function opt = getOptionPitchFT()
     % group of subjects to analyze
     opt.groups = {''};
     % suject to run in each group
-    opt.subjects = {'001'};
+    opt.subjects = {'pil001'};
 
     % we stay in native space (that of the T1)
-    opt.space = 'T1w';
+    opt.space = 'MNI'; %individual %MNI
 
     % The directory where the data are located
     opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
@@ -36,10 +36,9 @@ function opt = getOptionPitchFT()
     % Options for normalize
     % Voxel dimensions for resampling at normalization of functional data or leave empty [ ].
     opt.funcVoxelDims = [2.6 2.6 2.6];
-    opt.space = 'MNI';
 
-    %     % Save the opt variable as a mat file to load directly in the preprocessing
-    %     % scripts
-    %     save('opt.mat', 'opt');
+  %% DO NOT TOUCH
+  opt = checkOptions(opt);
+  saveOptions(opt);
 
 end
