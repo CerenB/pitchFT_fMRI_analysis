@@ -38,27 +38,30 @@ opt = getSpecificBoldFiles(opt);
 % add or count tot run number
 allRunFiles = opt.allFiles;
 
-% use a predefined mask, only calculate voxels within the mask
-maskFileName = opt.funcMaskFileName;
-% read/load mask file
-maskFile = spm_vol(maskFileName);
-mask = spm_read_vols(maskFile); % dimension wise, may not fit with func!!
+% % use a predefined mask, only calculate voxels within the mask
+% maskFileName = opt.funcMaskFileName;
+% % read/load mask file
+% maskFile = spm_vol(maskFileName);
+% mask = spm_read_vols(maskFile); % dimension wise, may not fit with func!!
 
 %%%%%%%%%%%% WORK IN PROGRESS
-mask(mask<100) = 0;
-mask(mask>0) = 1;
+% re-do the mask
+% Create a template
+A = load_untouch_nii('bet_05_meanuasub-pil001-PitchFT_run-001.nii');
+C = A ;
+C.fileprefix = 'C';
+C.img = [];
 
-new_masknii = make_nii(mask);
-save_nii(new_masknii,'funcBinaryMask3.nii')
+idx= find(A.img >0);
+A.img(idx) = 1;
+C.img = A.img;
+save_untouch_nii(C,'funcBinaryMask3.nii')
+
+maskFile = spm_vol('funcBinaryMask3.nii');
+mask = spm_read_vols(maskFile2);
 
 
-% new mask - binarise it & use it
-% bet_05_meanuasub-pil001-PitchFT_run-001.nii
-
-
-
-
-tasks={'Run1';'Run2'};
+%tasks={'Run1';'Run2'};
 
 %%%%%%%%%%%%%%%%%%%%%
 
