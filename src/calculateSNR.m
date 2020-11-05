@@ -58,7 +58,7 @@ C.img = A.img;
 save_untouch_nii(C,'funcBinaryMask3.nii')
 
 maskFile = spm_vol('funcBinaryMask3.nii');
-mask = spm_read_vols(maskFile2);
+mask = spm_read_vols(maskFile);
 
 
 %tasks={'Run1';'Run2'};
