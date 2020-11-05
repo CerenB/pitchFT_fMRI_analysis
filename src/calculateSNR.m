@@ -14,7 +14,7 @@ cd(fileparts(mfilename('fullpath')));
 
 addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
 warning('off');
-addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+%addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
 % spm fmri
 
 % set and check dependencies (lib)
@@ -24,7 +24,7 @@ checkDependencies();
 % subject to run
 opt.subject = {'pil001'};
 opt.taskName = 'PitchFT';
-opt.space = 'MNI';
+opt.space = 'individual';
 
 
 opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
@@ -45,23 +45,17 @@ maskFile = spm_vol(maskFileName);
 mask = spm_read_vols(maskFile); % dimension wise, may not fit with func!!
 
 %%%%%%%%%%%% WORK IN PROGRESS
-mask(mask>0) = 1; 
+mask(mask<100) = 0;
+mask(mask>0) = 1;
 
-save_nii(mask,'funcmask.nii')
+new_masknii = make_nii(mask);
+save_nii(new_masknii,'funcBinaryMask3.nii')
 
-% m = load_untouch_nii(maskFileName);
-% A = m.img ;
-% A(A ==1)
 
-% B = load_nii('lV5_6mm_2.nii');
-% 
-% % Create a template
-% C = A ;
-% C.fileprefix = 'C';
-% C.img = [];
-% 
-% C.img = A.img + B.img;
-% C.img(C.img ==2)= 1;
+% new mask - binarise it & use it
+% bet_05_meanuasub-pil001-PitchFT_run-001.nii
+
+
 
 
 tasks={'Run1';'Run2'};
@@ -70,7 +64,7 @@ tasks={'Run1';'Run2'};
 
 % mri.repetition time(TR) and repetition of steps/categA
 repetitionTime = 1.75;
-stepDuration = 36.18;
+stepDuration = 36.48;
 
 
 % calculate frequencies
@@ -96,6 +90,7 @@ RunPattern(2).pattern = [];
 RunPattern(2).rawpattern = [];
 
 
+
 %% Calculate SNR for each run
 for iRun = 1:length(allRunFiles)
     
@@ -116,14 +111,81 @@ for iRun = 1:length(allRunFiles)
     
     %remove the first 4 volumes, using this step to make the face stimulus onset at 0
     Pattern = signal(mask == 1,(onsetDelay+1):(sequenceVol+onsetDelay));
-    RunPattern(iRun).rawpattern = Pattern';
+    
+    Pattern = Pattern';
+    RunPattern(iRun).rawpattern = Pattern;
+    
+    
     %remove linear trend
-    PatternDT = detrend(Pattern');
-    %remove linear trend
-    RunPattern(iRun).pattern=PatternDT;
+    PatternDT = detrend(Pattern);
+    RunPattern(iRun).pattern = PatternDT;
     
     toc
     
+%%%%
+% interpolate (resample)
+    oldN = size(Pattern,1); 
+    newN = 104; 
+    oldFs = samplingFreq; 
+    newFs = 1 / (182.4 / newN); 
+    xi = linspace(0,oldN,newN); 
+
+   
+    % design low-pass filter (to be 100% sure you prevent aliasing)
+    fcutoff = samplingFreq/4;
+    transw  = .1;
+    order   = round( 7*samplingFreq/fcutoff );
+    shape   = [ 1 1 0 0 ];
+    frex    = [ 0 fcutoff fcutoff+fcutoff*transw samplingFreq/2 ] / (samplingFreq/2);
+    hz      = linspace(0,samplingFreq/2,floor(oldN/2)+1);
+
+    % get filter kernel
+    filtkern = firls(order,frex,shape);
+
+    % get kernel power spectrum
+    filtkernX = abs(fft(filtkern,oldN)).^2;
+    filtkernXdb = 10*log10(abs(fft(filtkern,oldN)).^2);
+
+
+%     % plot filter properties (visual check)
+%     figure
+%     plotedge = dsearchn(hz',fcutoff*3);
+%     
+%     subplot(2,2,1)
+%     plot((-order/2:order/2)/samplingFreq,filtkern,'k','linew',3)
+%     xlabel('Time (s)')
+%     title('Filter kernel')
+%     
+%     subplot(2,2,2), hold on
+%     plot(frex*samplingFreq/2,shape,'r','linew',1)
+% 
+%     plot(hz,filtkernX(1:length(hz)),'k','linew',2)
+%     set(gca,'xlim',[0 fcutoff*3])
+%     xlabel('Frequency (Hz)'), ylabel('Gain')
+%     title('Filter kernel spectrum')
+% 
+%     subplot(2,2,4)
+%     plot(hz,filtkernXdb(1:length(hz)),'k','linew',2)
+%     set(gca,'xlim',[0 fcutoff*3],'ylim',[min([filtkernXdb(plotedge) filtkernXdb(plotedge)]) 5])
+%     xlabel('Frequency (Hz)'), ylabel('Gain')
+%     title('Filter kernel spectrum (dB)')
+
+    % filter and interpolate
+    PatternRs = nan(newN, size(Pattern,2)); 
+    
+    for voxi=1:size(Pattern,2)
+        % low-pass filter
+        PatternFilt = filtfilt(filtkern,1,Pattern(:,voxi));
+        % interpolate
+        PatternRs(:,voxi) = interp1([1:oldN], PatternFilt, xi, 'linear'); 
+    end
+
+    RunPattern(iRun).pattern = PatternRs;
+    samplingFreq = newFs; 
+
+
+%%%%
+
     %number of samples (round to smallest even number)
     N = 2*floor(size(PatternDT,1)/2);
     %frequencies
