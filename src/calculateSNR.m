@@ -47,21 +47,19 @@ allRunFiles = opt.allFiles;
 %%%%%%%%%%%% WORK IN PROGRESS
 % re-do the mask
 % Create a template
-A = load_untouch_nii('bet_05_meanuasub-pil001-PitchFT_run-001.nii');
-C = A ;
-C.fileprefix = 'C';
-C.img = [];
+% A = load_untouch_nii('bet_05_meanuasub-pil001-PitchFT_run-001.nii');
+% C = A ;
+% C.fileprefix = 'C';
+% C.img = [];
+% 
+% idx= find(A.img >0);
+% A.img(idx) = 1;
+% C.img = A.img;
+% save_untouch_nii(C,'funcBinaryMask3.nii')
 
-idx= find(A.img >0);
-A.img(idx) = 1;
-C.img = A.img;
-save_untouch_nii(C,'funcBinaryMask3.nii')
-
-maskFile = spm_vol('funcBinaryMask3.nii');
+maskFileName = 'funcBinaryMask3.nii';
+maskFile = spm_vol(maskFileName);
 mask = spm_read_vols(maskFile);
-
-
-%tasks={'Run1';'Run2'};
 
 %%%%%%%%%%%%%%%%%%%%%
 
@@ -79,27 +77,23 @@ onsetDelay = 2; %5.2s
 endDelay = 4; %10.4s
 
 
+% use neighbouring 4 bins as noise frequencies
+BinSize = 4;
 
 
+RunPattern = struct(); 
+nVox = sum(mask(:)==1); 
+nRuns = length(allRunFiles); 
+newN = 104; 
 
-% We collected 313 volumes in total, but only 306 volumes/secs in each run (306/9=34 cycles),
-% remove the first 4 volumes to align the beginning with first appearance of faces 
-% and remove the last 3 volumes so we don't have any partial cycles
-
-% use neighbouring 40 bins as noise frequencies
-BinSize = 40;
-
-RunPattern(2).pattern = [];
-RunPattern(2).rawpattern = [];
-
-
+allRunsRaw = nan(newN, nVox, nRuns); 
+allRunsDT = nan(newN, nVox, nRuns); 
 
 %% Calculate SNR for each run
-for iRun = 1:length(allRunFiles)
+for iRun = 1:nRuns
     
     fprintf('Read in file ... \n');
     
-    tic
     
     % choose current BOLD file
     boldFileName = allRunFiles{iRun};
@@ -116,19 +110,12 @@ for iRun = 1:length(allRunFiles)
     Pattern = signal(mask == 1,(onsetDelay+1):(sequenceVol+onsetDelay));
     
     Pattern = Pattern';
-    RunPattern(iRun).rawpattern = Pattern;
     
-    
-    %remove linear trend
-    PatternDT = detrend(Pattern);
-    RunPattern(iRun).pattern = PatternDT;
-    
-    toc
+
     
 %%%%
 % interpolate (resample)
     oldN = size(Pattern,1); 
-    newN = 104; 
     oldFs = samplingFreq; 
     newFs = 1 / (182.4 / newN); 
     xi = linspace(0,oldN,newN); 
@@ -174,75 +161,111 @@ for iRun = 1:length(allRunFiles)
 %     title('Filter kernel spectrum (dB)')
 
     % filter and interpolate
-    PatternRs = nan(newN, size(Pattern,2)); 
+    patternResampled = zeros(newN, size(Pattern,2)); 
     
     for voxi=1:size(Pattern,2)
         % low-pass filter
         PatternFilt = filtfilt(filtkern,1,Pattern(:,voxi));
         % interpolate
-        PatternRs(:,voxi) = interp1([1:oldN], PatternFilt, xi, 'linear'); 
+        patternResampled(:,voxi) = interp1([1:oldN], PatternFilt, xi, 'spline'); 
     end
 
-    RunPattern(iRun).pattern = PatternRs;
     samplingFreq = newFs; 
 
 
 %%%%
 
+    %remove linear trend
+    patternDetrend = detrend(patternResampled);
+    
+    
     %number of samples (round to smallest even number)
-    N = 2*floor(size(PatternDT,1)/2);
+    N = newN; %2*floor(size(PatternDT,1)/2);
     %frequencies
     f = samplingFreq/2*linspace(0,1,N/2+1);
     %target frequency
-    TF=round(N*oddballFreq/samplingFreq+1);
+    TF = round(N*oddballFreq/samplingFreq+1);
     %number of bins for phase histogram
-    histBin=20;
+    histBin = 20;
     %threshold for choosing voxels for the phase distribution analysis
-    Thresh=4;
+    Thresh = 4;
     
-    [TargetSNR, TargetPhase, TargetSNRsigned,tSNR] = calcSNRmv6(...
-        PatternDT,RunPattern(iRun).rawpattern,TF,BinSize, Thresh,histBin);
+    [targetSNR, targetPhase, targetSNRsigned,tSNR] = calcSNRmv6(...
+        patternDetrend,patternResampled,TF,BinSize, Thresh,histBin);
+    
+    
+    allRunsRaw(:,:,iRun) = patternResampled; 
+    allRunsDT(:,:,iRun) = patternDetrend;
+    
     
     fprintf('Saving ... \n');
     
+    
+    %z-scored 1-D vector
+    zmapmasked = targetSNR;
+    
+    % allocate 3-D img
+    % get the mask
     mask_new = load_untouch_nii(maskFileName);
-    dims = size(mask_new.img);
-    
-    maskIndex = find(mask_new.img==1);
-    
-    zmapmasked = TargetSNR;
     zmap3Dmask = zeros(size(mask_new.img));
+    
+    %get mask index
+    maskIndex = find(mask_new.img==1);
+    % assign z-scores from 1-D to their correcponding 3-D location
     zmap3Dmask(maskIndex) = zmapmasked;
+    
     new_nii = make_nii(zmap3Dmask);
+    
     new_nii.hdr = mask_new.hdr;
+    
+    % get dimensions to save
+    dims = size(mask_new.img);
     new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
-    FileName=[current_dir  '/Results/SNR_' tasks{iRun} '.nii'];
+    
+    
+    
+    FileName = fullfile(opt.derivativesDir,'..',...
+                        'FFT_RnB',['SNR_sub-',...
+                        opt.subject{1},'_ses-001_task-',...
+                        opt.taskName,'_run-00',num2str(iRun),...
+                        '_bold.nii']);
+
     save_nii(new_nii,FileName);
     
 end
 
 
 %% Calculate SNR for the averaged time course of the two runs
-avgPattern=(RunPattern(1).pattern+RunPattern(2).pattern)/2;
-avgrawPattern=(RunPattern(1).rawpattern+RunPattern(2).rawpattern)/2;
+avgPattern = mean(allRunsDT,3); 
+avgrawPattern = mean(allRunsRaw,3); 
+
+% avgPattern=(RunPattern(1).pattern+RunPattern(2).pattern)/2;
+% avgrawPattern=(RunPattern(1).rawpattern+RunPattern(2).rawpattern)/2;
 
 % SNR Calculation
 fprintf('Calculating average... \n');
-[TargetSNR, TargetPhase, TargetSNRsigned, tSNR]=calcSNRmv6(avgPattern,avgrawPattern,TF,BinSize, Thresh,histBin); 
+[targetSNR, targetPhase, targetSNRsigned, tSNR]=calcSNRmv6(avgPattern,avgrawPattern,TF,BinSize, Thresh,histBin); 
             
 % write zmap
 fprintf('Saving average... \n');
 mask_new=load_untouch_nii(maskFileName);
 maskIndex=find(mask_new.img==1);
 dims=size(mask_new.img);
-zmapmasked=TargetSNR;
+zmapmasked=targetSNR;
 zmap3Dmask=zeros(size(mask_new.img));
 zmap3Dmask(maskIndex)=zmapmasked;
 new_nii = make_nii(zmap3Dmask);
 new_nii.hdr = mask_new.hdr;
 new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
-FileName=[current_dir '/Results/SNR_Avg.nii'];
+    FileName = fullfile(opt.derivativesDir,'..',...
+                        'FFT_RnB',['AvgSNR_sub-',...
+                        opt.subject{1},'_ses-001_task-',...
+                        opt.taskName,...
+                        '_bold.nii']);
 save_nii(new_nii,FileName);
+
+
+
 
 
 
