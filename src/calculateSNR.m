@@ -73,8 +73,8 @@ oddballFreq = 1/stepDuration;
 samplingFreq = 1/repetitionTime; 
 
 % Number of vol before/after the rhythmic sequence (exp) are presented
-onsetDelay = 2; %5.2s
-endDelay = 4; %10.4s
+onsetDelay = 2;
+endDelay = 4;
 
 
 % use neighbouring 4 bins as noise frequencies
