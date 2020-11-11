@@ -12,14 +12,20 @@ function opt = getOptionPitchFT()
     % group of subjects to analyze
     opt.groups = {''};
     % suject to run in each group
-    opt.subjects = {'pil001'};
+    opt.subjects = {'001'};
+
+    % Uncomment the lines below to run preprocessing
+    % - don't use realign and unwarp
+    opt.realign.useUnwarp = true;
 
     % we stay in native space (that of the T1)
-    opt.space = 'MNI'; %individual %MNI
+    % - in "native" space: don't do normalization
+    opt.space = 'individual'; % 'individual', 'MNI'
 
     % The directory where the data are located
     opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
                            '..', '..', '..',  'raw');
+    opt.derivativesDir = fullfile(opt.dataDir, '..');
 
     % task to analyze
     opt.taskName = 'PitchFT';
@@ -27,7 +33,7 @@ function opt = getOptionPitchFT()
     % Suffix output directory for the saved jobs
     opt.jobsDir = fullfile( ...
                            opt.dataDir, '..', 'derivatives', ...
-                           'SPM12_CPPL', 'JOBS', opt.taskName);
+                           'cpp_spm', 'JOBS', opt.taskName);
 
     opt.sliceOrder = [];
 

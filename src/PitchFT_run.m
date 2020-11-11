@@ -1,9 +1,6 @@
 clear;
 clc;
 
-% Smoothing to apply
-FWHM = 3;
-isMVPA = false;
 
 cd(fileparts(mfilename('fullpath')));
 
@@ -20,25 +17,29 @@ opt = getOptionPitchFT();
 checkDependencies();
 
 %% Run batches
-%reportBIDS(opt);
-%bidsCopyRawFolder(opt, 1);
+%    reportBIDS(opt);
+%    bidsCopyRawFolder(opt, 1);
+% % 
+% % % In case you just want to run segmentation and skull stripping
+% % % Skull stripping is also included in 'bidsSpatialPrepro'
+%    bidsSegmentSkullStrip(opt);
+% % 
+%    bidsSTC(opt);
+% % 
+%    bidsSpatialPrepro(opt);
 
-% In case you just want to run segmentation and skull stripping
-% Skull stripping is also included in 'bidsSpatialPrepro'
-% bidsSegmentSkullStrip(opt);
-
-% bidsSTC(opt);
-
- bidsSpatialPrepro(opt);
-
-% The following do not run on octave for now (because of spmup)
+% Quality control
 %  anatomicalQA(opt);
 %  bidsResliceTpmToFunc(opt);
 %  functionalQA(opt);
 
+% smoothing
+ FWHM = 3;
  bidsSmoothing(FWHM, opt);
-
-% The following crash on Travis CI
+%
+% % The following crash on Travis CI
 % bidsFFX('specifyAndEstimate', opt, FWHM);
 % bidsFFX('contrasts', opt, FWHM);
+
 % bidsResults(opt, FWHM);
+% isMVPA = false;
