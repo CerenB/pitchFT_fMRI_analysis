@@ -8,3 +8,5 @@
 *.mat
 
 *.ps
+
+src/*.json
