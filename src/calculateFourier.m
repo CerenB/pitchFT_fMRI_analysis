@@ -1,7 +1,4 @@
-function [TargetSNR, TargetPhase, TargetSNRsigned, tSNR] = calculateFourier(X, Xraw, ...
-                                                                            TargetFrequency, ...
-                                                                            BinSize, Thresh, ...
-                                                                            histBin)
+function [targetSNR, cfg] = calculateFourier(X, Xraw, cfg)
     % Fourier analysis of fMRI time series data, returns the SNR at a given
     %        frequency for each voxel
     %
@@ -42,6 +39,11 @@ function [TargetSNR, TargetPhase, TargetSNRsigned, tSNR] = calculateFourier(X, X
     % Steps of the analysis
     % 1. FFT of the time series
 
+    targetFrequency = cfg.targetFrequency;
+    binSize = cfg.binSize;
+    thresh = cfg.thresh;
+    histBin = cfg.histBin;
+
     tSNR = mean(Xraw) ./ std(Xraw);
 
     FT = fft(X);
@@ -49,28 +51,29 @@ function [TargetSNR, TargetPhase, TargetSNRsigned, tSNR] = calculateFourier(X, X
     % 2. define noise frequencies based on TargetFrequency and BinSize with a
     % gap of 1
     gap = 1;
-    NoiseFs = [(TargetFrequency - BinSize / 2 - gap): ...
-               (TargetFrequency - 1 - gap) (TargetFrequency + 1 + gap): ...
-               (TargetFrequency + BinSize / 2 + gap)];
+    noiseFs = [(targetFrequency - binSize / 2 - gap): ...
+               (targetFrequency - 1 - gap) (targetFrequency + 1 + gap): ...
+               (targetFrequency + binSize / 2 + gap)];
 
     % 3. calculate the mean and SD of the amplitudes of the noise frequencies
-    FTNoise = FT(NoiseFs, :);
+    FTNoise = FT(noiseFs, :);
     AmpNoise = abs(FTNoise);
     NoiseMean = mean(AmpNoise, 1);
     NoiseSD = std(AmpNoise, 0, 1);
 
     % 4. calculate SNR (z-score) of the target frequency based on the mean and SD of the
     % noise frequencies
-    TargetSNR = (abs(FT(TargetFrequency, :)) - NoiseMean) ./ NoiseSD;
+    targetSNR = (abs(FT(targetFrequency, :)) - NoiseMean) ./ NoiseSD;
 
     % 5. using the distribution of phase of the target frequency to define the sign
-    TargetPhase = angle(FT(TargetFrequency, :));
+    targetPhase = angle(FT(targetFrequency, :));
 
     % 5.1 find the peak of the distribution of positive phase
     % It assums that in the experiment, stimulus onset is at 0 phase
-    TargetPhaseP = TargetPhase(TargetPhase > 0); % positive phase values
+    TargetPhaseP = targetPhase(targetPhase > 0); % positive phase values
+
     while 1
-        [n, x] = hist(TargetPhaseP(TargetSNR(TargetPhase > 0) > Thresh), ...
+        [n, x] = hist(TargetPhaseP(targetSNR(targetPhase > 0) > thresh), ...
                       histBin);
         xcenter = x(n == max(n));
         if length(xcenter) > 1
@@ -81,10 +84,16 @@ function [TargetSNR, TargetPhase, TargetSNRsigned, tSNR] = calculateFourier(X, X
     end
 
     % 5.2 assign the peak phase ? pi/2 to be 1 and the others to be -1
-    PhaseDiff = abs(TargetPhase - xcenter);
-    PhaseIndex = zeros(size(PhaseDiff));
-    PhaseIndex(PhaseDiff <= (pi / 2)) = 1;
-    PhaseIndex(PhaseDiff > (pi / 2)) = -1;
+    phaseDiff = abs(targetPhase - xcenter);
+    phaseIndex = zeros(size(phaseDiff));
+    phaseIndex(phaseDiff <= (pi / 2)) = 1;
+    phaseIndex(phaseDiff > (pi / 2)) = -1;
 
     % 5.3 apply sign to target SNR
-    TargetSNRsigned = TargetSNR .* PhaseIndex;
+    targetSNRsigned = targetSNR .* phaseIndex;
+
+    % unused parameters for now
+    cfg.targetPhase = targetPhase;
+    cfg.targetSNRsigned = targetSNRsigned;
+    cfg.tSNR = tSNR;
+    %

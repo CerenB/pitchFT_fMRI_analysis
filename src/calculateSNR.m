@@ -3,7 +3,6 @@
 % RnB lab 2020 SNR analysis script adapted from
 % Xiaoqing Gao, Feb 27, 2020, Hangzhou xiaoqinggao@zju.edu.cn
 
-
 % note: if we keep .mat files, in source folder, we can load them here to extract some
 % parameters
 
@@ -14,7 +13,7 @@ cd(fileparts(mfilename('fullpath')));
 
 addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
 warning('off');
-%addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+% addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
 % spm fmri
 
 % set and check dependencies (lib)
@@ -22,8 +21,8 @@ initEnv();
 checkDependencies();
 
 % subject to run
-opt.subject = {'001'};
-opt.taskName = 'PitchFT';
+opt.subject = {'002'};
+opt.taskName = 'RhythmFT';
 opt.space = 'individual';
 
 opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
@@ -40,7 +39,6 @@ maskFileName = makeNativeSpaceMask(opt.funcMaskFileName);
 maskFile = spm_vol(maskFileName);
 mask = spm_read_vols(maskFile);
 
-
 % mri.repetition time(TR) and repetition of steps/categA
 repetitionTime = 1.75;
 stepDuration = 36.48;
@@ -54,7 +52,7 @@ onsetDelay = 2;
 endDelay = 4;
 
 % use neighbouring 4 bins as noise frequencies
-BinSize = 4;
+cfg.binSize = 4;
 
 RunPattern = struct();
 nVox = sum(mask(:) == 1);
@@ -152,17 +150,19 @@ for iRun = 1:nRuns
     % frequencies
     f = samplingFreq / 2 * linspace(0, 1, N / 2 + 1);
     % target frequency
-    TF = round(N * oddballFreq / samplingFreq + 1);
+    cfg.targetFrequency = round(N * oddballFreq / samplingFreq + 1);
     % number of bins for phase histogram
-    histBin = 20;
+    cfg.histBin = 20;
     % threshold for choosing voxels for the phase distribution analysis
-    Thresh = 4;
+    cfg.thresh = 4;
 
-    [targetSNR, targetPhase, targetSNRsigned, tSNR] = calculateFourier( ...
-                                                                 patternDetrend, ...
-                                                                 patternResampled, ...
-                                                                 TF, BinSize, Thresh, ...
-                                                                 histBin);
+    [targetSNR, cfg] = calculateFourier(patternDetrend, patternResampled, cfg);
+
+    %     %unused parameters for now
+    %     targetPhase = cfg.targetPhase;
+    %     targetSNRsigned = cfg.targetSNRsigned;
+    %     tSNR = cfg.tSNR;
+    %     %
 
     allRunsRaw(:, :, iRun) = patternResampled;
     allRunsDT(:, :, iRun) = patternDetrend;
@@ -191,8 +191,8 @@ for iRun = 1:nRuns
     new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 
     FileName = fullfile(opt.derivativesDir, '..', ...
-                        'FFT_RnB',['sub-',opt.subject{1}],...
-                        'ses-001',['SNR_sub-', ...
+                        'FFT_RnB', ['sub-', opt.subject{1}], ...
+                        'ses-001', ['SNR_sub-', ...
                                     opt.subject{1}, '_ses-001_task-', ...
                                     opt.taskName, '_run-00', num2str(iRun), ...
                                     '_bold.nii']);
@@ -210,10 +210,7 @@ avgrawPattern = mean(allRunsRaw, 3);
 
 % SNR Calculation
 fprintf('Calculating average... \n');
-[targetSNR, targetPhase, targetSNRsigned, tSNR] = calculateFourier(avgPattern, ...
-                                                             avgrawPattern, ...
-                                                             TF, BinSize, ...
-                                                             Thresh, histBin);
+[targetSNR, cfg] = calculateFourier(avgPattern, avgrawPattern, cfg);
 
 % write zmap
 fprintf('Saving average... \n');
@@ -227,11 +224,15 @@ new_nii = make_nii(zmap3Dmask);
 new_nii.hdr = mask_new.hdr;
 new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 FileName = fullfile(opt.derivativesDir, '..', ...
-                    'FFT_RnB',['sub-',opt.subject{1}],...
-                        'ses-001',['AvgSNR_sub-', ...
-                     opt.subject{1}, '_ses-001_task-', ...
-                     opt.taskName, '_bold.nii']);
+                    'FFT_RnB', ['sub-', opt.subject{1}], ...
+                    'ses-001', ['AvgSNR_sub-', ...
+                                opt.subject{1}, '_ses-001_task-', ...
+                                opt.taskName, '_bold.nii']);
 save_nii(new_nii, FileName);
+
+
+
+
 
 
 
@@ -284,19 +285,19 @@ function opt = getSpecificBoldFiles(opt)
 
     % get the masks
     anatMaskFileName = fullfile(subFuncDataDir, '..', ...
-                                'anat', 'msub-,',...
-                                opt.subject,'_ses-001_T1w_mask.nii');
+                                'anat', 'msub-,', ...
+                                opt.subject, '_ses-001_T1w_mask.nii');
 
     funcMaskFileName = fullfile(subFuncDataDir, ...
-                                ['meanasub-',opt.subject{1},...
-                                '_ses-001_task-,',opt.taskName,...
-                                '_run-001_bold.nii']);
+                                ['meanasub-', opt.subject{1}, ...
+                                 '_ses-001_task-,', opt.taskName, ...
+                                 '_run-001_bold.nii']);
 
     if strcmp(opt.space, 'individual')
         funcMaskFileName = fullfile(subFuncDataDir, ...
-                                    ['meanuasub-',opt.subject{1},...
-                                    '_ses-001_task-', opt.taskName,...
-                                    '_run-001_bold.nii']);
+                                    ['meanuasub-', opt.subject{1}, ...
+                                     '_ses-001_task-', opt.taskName, ...
+                                     '_run-001_bold.nii']);
     end
 
     opt.anatMaskFileName = anatMaskFileName;
