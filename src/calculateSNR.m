@@ -22,7 +22,7 @@ checkDependencies();
 
 % subject to run
 opt.subject = {'002'};
-opt.taskName = 'RhythmFT';
+opt.taskName = 'PitchFT';
 opt.space = 'individual';
 
 opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
