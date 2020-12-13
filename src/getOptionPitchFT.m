@@ -43,8 +43,8 @@ function opt = getOptionPitchFT()
     % Voxel dimensions for resampling at normalization of functional data or leave empty [ ].
     opt.funcVoxelDims = [2.6 2.6 2.6];
 
-  %% DO NOT TOUCH
-  opt = checkOptions(opt);
-  saveOptions(opt);
+    %% DO NOT TOUCH
+    opt = checkOptions(opt);
+    saveOptions(opt);
 
 end

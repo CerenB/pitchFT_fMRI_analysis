@@ -230,12 +230,6 @@ FileName = fullfile(opt.derivativesDir, '..', ...
                                 opt.taskName, '_bold.nii']);
 save_nii(new_nii, FileName);
 
-
-
-
-
-
-
 function opt = getSpecificBoldFiles(opt)
 
     % we let SPM figure out what is in this BIDS data set

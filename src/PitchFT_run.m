@@ -1,7 +1,6 @@
 clear;
 clc;
 
-
 cd(fileparts(mfilename('fullpath')));
 
 addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
@@ -19,13 +18,13 @@ checkDependencies();
 %% Run batches
 %    reportBIDS(opt);
 %    bidsCopyRawFolder(opt, 1);
-% % 
+% %
 % % % In case you just want to run segmentation and skull stripping
 % % % Skull stripping is also included in 'bidsSpatialPrepro'
 %    bidsSegmentSkullStrip(opt);
-% % 
+% %
 %    bidsSTC(opt);
-% % 
+% %
 %    bidsSpatialPrepro(opt);
 
 % Quality control
@@ -34,8 +33,8 @@ checkDependencies();
 %  functionalQA(opt);
 
 % smoothing
- FWHM = 3;
- bidsSmoothing(FWHM, opt);
+FWHM = 3;
+bidsSmoothing(FWHM, opt);
 %
 % % The following crash on Travis CI
 % bidsFFX('specifyAndEstimate', opt, FWHM);
