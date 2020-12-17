@@ -10,3 +10,5 @@
 *.ps
 
 src/*.json
+
+src/models/model-defaultPitchFT_smdl.json
