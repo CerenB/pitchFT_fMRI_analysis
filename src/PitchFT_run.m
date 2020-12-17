@@ -16,21 +16,21 @@ opt = getOptionPitchFT();
 checkDependencies();
 
 %% Run batches
-%    reportBIDS(opt);
-%    bidsCopyRawFolder(opt, 1);
+%reportBIDS(opt);
+bidsCopyRawFolder(opt, 1);
 % %
 % % % In case you just want to run segmentation and skull stripping
 % % % Skull stripping is also included in 'bidsSpatialPrepro'
 %    bidsSegmentSkullStrip(opt);
 % %
-%    bidsSTC(opt);
+bidsSTC(opt);
 % %
-%    bidsSpatialPrepro(opt);
+bidsSpatialPrepro(opt);
 
 % Quality control
-%  anatomicalQA(opt);
-%  bidsResliceTpmToFunc(opt);
-%  functionalQA(opt);
+anatomicalQA(opt);
+bidsResliceTpmToFunc(opt);
+functionalQA(opt);
 
 % smoothing
 FWHM = 3;

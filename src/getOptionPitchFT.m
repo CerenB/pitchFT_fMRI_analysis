@@ -12,7 +12,7 @@ function opt = getOptionPitchFT()
     % group of subjects to analyze
     opt.groups = {''};
     % suject to run in each group
-    opt.subjects = {'002'};
+    opt.subjects = {'004','005','006','007'}; %'004','005','006',
 
     % Uncomment the lines below to run preprocessing
     % - don't use realign and unwarp
