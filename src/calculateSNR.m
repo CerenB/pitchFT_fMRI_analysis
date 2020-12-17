@@ -9,6 +9,7 @@
 clear;
 clc;
 
+%% set the paths & subject info
 cd(fileparts(mfilename('fullpath')));
 
 addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
@@ -21,9 +22,11 @@ initEnv();
 checkDependencies();
 
 % subject to run
-opt.subject = {'002'};
+opt.subject = {'007'};
+opt.session = {'001'};
 opt.taskName = 'PitchFT';
 opt.space = 'individual';
+
 
 opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
                               '..', '..', '..',  'derivatives', 'cpp_spm');
@@ -39,9 +42,14 @@ maskFileName = makeNativeSpaceMask(opt.funcMaskFileName);
 maskFile = spm_vol(maskFileName);
 mask = spm_read_vols(maskFile);
 
+%% setup parameters for FFT analysis
 % mri.repetition time(TR) and repetition of steps/categA
 repetitionTime = 1.75;
+opt.stepSize = 4;
 stepDuration = 36.48;
+
+% setup output directory
+opt.destinationDir = createOutputDirectory(opt);
 
 % calculate frequencies
 oddballFreq = 1 / stepDuration;
@@ -190,12 +198,12 @@ for iRun = 1:nRuns
     dims = size(mask_new.img);
     new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 
-    FileName = fullfile(opt.derivativesDir, '..', ...
-                        'FFT_RnB', ['sub-', opt.subject{1}], ...
-                        'ses-001', ['SNR_sub-', ...
-                                    opt.subject{1}, '_ses-001_task-', ...
-                                    opt.taskName, '_run-00', num2str(iRun), ...
-                                    '_bold.nii']);
+    % save the results
+    FileName = fullfile(opt.destinationDir, ['SNR_sub-', opt.subject{1}, ...
+                                             '_ses-', opt.session{1}, ...
+                                             '_task-', opt.taskName, ...
+                                             '_run-00', num2str(iRun), ...
+                                             '_bold.nii']);
 
     save_nii(new_nii, FileName);
 
@@ -223,11 +231,12 @@ zmap3Dmask(maskIndex) = zmapmasked;
 new_nii = make_nii(zmap3Dmask);
 new_nii.hdr = mask_new.hdr;
 new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
-FileName = fullfile(opt.derivativesDir, '..', ...
-                    'FFT_RnB', ['sub-', opt.subject{1}], ...
-                    'ses-001', ['AvgSNR_sub-', ...
-                                opt.subject{1}, '_ses-001_task-', ...
-                                opt.taskName, '_bold.nii']);
+
+FileName = fullfile(opt.destinationDir, ['AvgSNR_sub-', opt.subject{1}, ...
+                                         '_ses-', opt.session{1}, ...
+                                         '_task-', opt.taskName, ...
+                                         '_bold.nii']);
+
 save_nii(new_nii, FileName);
 
 function opt = getSpecificBoldFiles(opt)
@@ -296,5 +305,28 @@ function opt = getSpecificBoldFiles(opt)
 
     opt.anatMaskFileName = anatMaskFileName;
     opt.funcMaskFileName = funcMaskFileName;
+
+end
+
+function destinationDir = createOutputDirectory(opt)
+
+    subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB');
+    subject = ['sub-', opt.subject{1}];
+    session = ['ses-', opt.session{1}];
+    stepFolder = ['step', num2str(opt.stepSize)];
+    dirsToMake = {subject, session, stepFolder};
+
+    % create subject folder witn subfolders if doesn't exist
+    if ~exist(fullfile(subjectDestDir, subject, session, stepFolder), 'dir')
+        for idir = 1:length(dirsToMake)
+            Thisdir = fullfile(subjectDestDir, dirsToMake{1:idir});
+            if ~exist(Thisdir)
+                mkdir(Thisdir);
+            end
+        end
+    end
+
+    % output the results
+    destinationDir =  fullfile(subjectDestDir, subject, session, stepFolder);
 
 end
