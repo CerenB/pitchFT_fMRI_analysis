@@ -22,7 +22,7 @@ initEnv();
 checkDependencies();
 
 % subject to run
-opt.subject = {'007'};
+opt.subject = {'003'};
 opt.session = {'001'};
 opt.taskName = 'PitchFT';
 opt.space = 'individual';
