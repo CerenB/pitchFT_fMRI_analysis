@@ -27,7 +27,6 @@ opt.session = {'001'};
 opt.taskName = 'PitchFT';
 opt.space = 'individual';
 
-
 opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
                               '..', '..', '..',  'derivatives', 'cpp_spm');
 
@@ -73,139 +72,139 @@ allRunsDT = nan(newN, nVox, nRuns);
 %% Calculate SNR for each run
 for iRun = 1:nRuns
 
-    fprintf('Read in file ... \n');
+  fprintf('Read in file ... \n');
 
-    % choose current BOLD file
-    boldFileName = allRunFiles{iRun};
-    % read/load bold file
-    boldFile = spm_vol(boldFileName);
-    signal = spm_read_vols(boldFile); % check the load_untouch_nii to compare
-    signal = reshape(signal, [size(signal, 1) * size(signal, 2) * ...
-                              size(signal, 3) size(signal, 4)]);
+  % choose current BOLD file
+  boldFileName = allRunFiles{iRun};
+  % read/load bold file
+  boldFile = spm_vol(boldFileName);
+  signal = spm_read_vols(boldFile); % check the load_untouch_nii to compare
+  signal = reshape(signal, [size(signal, 1) * size(signal, 2) * ...
+                            size(signal, 3) size(signal, 4)]);
 
-    % find cyclic volume
-    totalVol = length(spm_vol(boldFileName));
-    sequenceVol = totalVol - onsetDelay - endDelay;
+  % find cyclic volume
+  totalVol = length(spm_vol(boldFileName));
+  sequenceVol = totalVol - onsetDelay - endDelay;
 
-    % remove the first 4 volumes, using this step to make the face stimulus onset at 0
-    Pattern = signal(mask == 1, (onsetDelay + 1):(sequenceVol + onsetDelay));
+  % remove the first 4 volumes, using this step to make the face stimulus onset at 0
+  Pattern = signal(mask == 1, (onsetDelay + 1):(sequenceVol + onsetDelay));
 
-    Pattern = Pattern';
+  Pattern = Pattern';
 
-    % interpolate (resample)
-    oldN = size(Pattern, 1);
-    oldFs = samplingFreq;
-    newFs = 1 / (182.4 / newN);
-    xi = linspace(0, oldN, newN);
+  % interpolate (resample)
+  oldN = size(Pattern, 1);
+  oldFs = samplingFreq;
+  newFs = 1 / (182.4 / newN);
+  xi = linspace(0, oldN, newN);
 
-    % design low-pass filter (to be 100% sure you prevent aliasing)
-    fcutoff = samplingFreq / 4;
-    transw  = .1;
-    order   = round(7 * samplingFreq / fcutoff);
-    shape   = [1 1 0 0];
-    frex    = [0 fcutoff fcutoff + fcutoff * transw samplingFreq / 2] / ...
-              (samplingFreq / 2);
-    hz      = linspace(0, samplingFreq / 2, floor(oldN / 2) + 1);
+  % design low-pass filter (to be 100% sure you prevent aliasing)
+  fcutoff = samplingFreq / 4;
+  transw  = .1;
+  order   = round(7 * samplingFreq / fcutoff);
+  shape   = [1 1 0 0];
+  frex    = [0 fcutoff fcutoff + fcutoff * transw samplingFreq / 2] / ...
+            (samplingFreq / 2);
+  hz      = linspace(0, samplingFreq / 2, floor(oldN / 2) + 1);
 
-    % get filter kernel
-    filtkern = firls(order, frex, shape);
+  % get filter kernel
+  filtkern = firls(order, frex, shape);
 
-    % get kernel power spectrum
-    filtkernX = abs(fft(filtkern, oldN)).^2;
-    filtkernXdb = 10 * log10(abs(fft(filtkern, oldN)).^2);
+  % get kernel power spectrum
+  filtkernX = abs(fft(filtkern, oldN)).^2;
+  filtkernXdb = 10 * log10(abs(fft(filtkern, oldN)).^2);
 
-    %     % plot filter properties (visual check)
-    %     figure
-    %     plotedge = dsearchn(hz',fcutoff*3);
-    %
-    %     subplot(2,2,1)
-    %     plot((-order/2:order/2)/samplingFreq,filtkern,'k','linew',3)
-    %     xlabel('Time (s)')
-    %     title('Filter kernel')
-    %
-    %     subplot(2,2,2), hold on
-    %     plot(frex*samplingFreq/2,shape,'r','linew',1)
-    %
-    %     plot(hz,filtkernX(1:length(hz)),'k','linew',2)
-    %     set(gca,'xlim',[0 fcutoff*3])
-    %     xlabel('Frequency (Hz)'), ylabel('Gain')
-    %     title('Filter kernel spectrum')
-    %
-    %     subplot(2,2,4)
-    %     plot(hz,filtkernXdb(1:length(hz)),'k','linew',2)
-    %     set(gca,'xlim',[0 fcutoff*3],'ylim',...
-    %        [min([filtkernXdb(plotedge) filtkernXdb(plotedge)]) 5])
-    %     xlabel('Frequency (Hz)'), ylabel('Gain')
-    %     title('Filter kernel spectrum (dB)')
+  %     % plot filter properties (visual check)
+  %     figure
+  %     plotedge = dsearchn(hz',fcutoff*3);
+  %
+  %     subplot(2,2,1)
+  %     plot((-order/2:order/2)/samplingFreq,filtkern,'k','linew',3)
+  %     xlabel('Time (s)')
+  %     title('Filter kernel')
+  %
+  %     subplot(2,2,2), hold on
+  %     plot(frex*samplingFreq/2,shape,'r','linew',1)
+  %
+  %     plot(hz,filtkernX(1:length(hz)),'k','linew',2)
+  %     set(gca,'xlim',[0 fcutoff*3])
+  %     xlabel('Frequency (Hz)'), ylabel('Gain')
+  %     title('Filter kernel spectrum')
+  %
+  %     subplot(2,2,4)
+  %     plot(hz,filtkernXdb(1:length(hz)),'k','linew',2)
+  %     set(gca,'xlim',[0 fcutoff*3],'ylim',...
+  %        [min([filtkernXdb(plotedge) filtkernXdb(plotedge)]) 5])
+  %     xlabel('Frequency (Hz)'), ylabel('Gain')
+  %     title('Filter kernel spectrum (dB)')
 
-    % filter and interpolate
-    patternResampled = zeros(newN, size(Pattern, 2));
+  % filter and interpolate
+  patternResampled = zeros(newN, size(Pattern, 2));
 
-    for voxi = 1:size(Pattern, 2)
-        % low-pass filter
-        PatternFilt = filtfilt(filtkern, 1, Pattern(:, voxi));
-        % interpolate
-        patternResampled(:, voxi) = interp1([1:oldN], PatternFilt, xi, 'spline');
-    end
+  for voxi = 1:size(Pattern, 2)
+    % low-pass filter
+    PatternFilt = filtfilt(filtkern, 1, Pattern(:, voxi));
+    % interpolate
+    patternResampled(:, voxi) = interp1([1:oldN], PatternFilt, xi, 'spline');
+  end
 
-    samplingFreq = newFs;
+  samplingFreq = newFs;
 
-    % remove linear trend
-    patternDetrend = detrend(patternResampled);
+  % remove linear trend
+  patternDetrend = detrend(patternResampled);
 
-    % number of samples (round to smallest even number)
-    N = newN; % 2*floor(size(PatternDT,1)/2);
-    % frequencies
-    f = samplingFreq / 2 * linspace(0, 1, N / 2 + 1);
-    % target frequency
-    cfg.targetFrequency = round(N * oddballFreq / samplingFreq + 1);
-    % number of bins for phase histogram
-    cfg.histBin = 20;
-    % threshold for choosing voxels for the phase distribution analysis
-    cfg.thresh = 4;
+  % number of samples (round to smallest even number)
+  N = newN; % 2*floor(size(PatternDT,1)/2);
+  % frequencies
+  f = samplingFreq / 2 * linspace(0, 1, N / 2 + 1);
+  % target frequency
+  cfg.targetFrequency = round(N * oddballFreq / samplingFreq + 1);
+  % number of bins for phase histogram
+  cfg.histBin = 20;
+  % threshold for choosing voxels for the phase distribution analysis
+  cfg.thresh = 4;
 
-    [targetSNR, cfg] = calculateFourier(patternDetrend, patternResampled, cfg);
+  [targetSNR, cfg] = calculateFourier(patternDetrend, patternResampled, cfg);
 
-    %     %unused parameters for now
-    %     targetPhase = cfg.targetPhase;
-    %     targetSNRsigned = cfg.targetSNRsigned;
-    %     tSNR = cfg.tSNR;
-    %     %
+  %     %unused parameters for now
+  %     targetPhase = cfg.targetPhase;
+  %     targetSNRsigned = cfg.targetSNRsigned;
+  %     tSNR = cfg.tSNR;
+  %     %
 
-    allRunsRaw(:, :, iRun) = patternResampled;
-    allRunsDT(:, :, iRun) = patternDetrend;
+  allRunsRaw(:, :, iRun) = patternResampled;
+  allRunsDT(:, :, iRun) = patternDetrend;
 
-    fprintf('Saving ... \n');
+  fprintf('Saving ... \n');
 
-    % z-scored 1-D vector
-    zmapmasked = targetSNR;
+  % z-scored 1-D vector
+  zmapmasked = targetSNR;
 
-    % allocate 3-D img
-    % get the mask
-    mask_new = load_untouch_nii(maskFileName);
-    zmap3Dmask = zeros(size(mask_new.img));
+  % allocate 3-D img
+  % get the mask
+  mask_new = load_untouch_nii(maskFileName);
+  zmap3Dmask = zeros(size(mask_new.img));
 
-    % get mask index
-    maskIndex = find(mask_new.img == 1);
-    % assign z-scores from 1-D to their correcponding 3-D location
-    zmap3Dmask(maskIndex) = zmapmasked;
+  % get mask index
+  maskIndex = find(mask_new.img == 1);
+  % assign z-scores from 1-D to their correcponding 3-D location
+  zmap3Dmask(maskIndex) = zmapmasked;
 
-    new_nii = make_nii(zmap3Dmask);
+  new_nii = make_nii(zmap3Dmask);
 
-    new_nii.hdr = mask_new.hdr;
+  new_nii.hdr = mask_new.hdr;
 
-    % get dimensions to save
-    dims = size(mask_new.img);
-    new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
+  % get dimensions to save
+  dims = size(mask_new.img);
+  new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 
-    % save the results
-    FileName = fullfile(opt.destinationDir, ['SNR_sub-', opt.subject{1}, ...
-                                             '_ses-', opt.session{1}, ...
-                                             '_task-', opt.taskName, ...
-                                             '_run-00', num2str(iRun), ...
-                                             '_bold.nii']);
+  % save the results
+  FileName = fullfile(opt.destinationDir, ['SNR_sub-', opt.subject{1}, ...
+                                           '_ses-', opt.session{1}, ...
+                                           '_task-', opt.taskName, ...
+                                           '_run-00', num2str(iRun), ...
+                                           '_bold.nii']);
 
-    save_nii(new_nii, FileName);
+  save_nii(new_nii, FileName);
 
 end
 
@@ -241,92 +240,92 @@ save_nii(new_nii, FileName);
 
 function opt = getSpecificBoldFiles(opt)
 
-    % we let SPM figure out what is in this BIDS data set
-    BIDS = spm_BIDS(opt.derivativesDir);
+  % we let SPM figure out what is in this BIDS data set
+  BIDS = spm_BIDS(opt.derivativesDir);
 
-    subID = opt.subject(1);
+  subID = opt.subject(1);
 
-    % identify sessions for this subject
-    [sessions, nbSessions] = getInfo(BIDS, subID, opt, 'Sessions');
+  % identify sessions for this subject
+  [sessions, nbSessions] = getInfo(BIDS, subID, opt, 'Sessions');
 
-    % creates prefix to look for
-    prefix = 's3wa';
-    if strcmp(opt.space, 'individual')
-        prefix = 's3ua';
+  % creates prefix to look for
+  prefix = 's3wa';
+  if strcmp(opt.space, 'individual')
+    prefix = 's3ua';
+
+  end
+
+  allFiles = [];
+  sesCounter = 1;
+
+  for iSes = 1:nbSessions        % For each session
+
+    % get all runs for that subject across all sessions
+    [runs, nbRuns] = getInfo(BIDS, subID, opt, 'Runs', sessions{iSes});
+
+    % numRuns = group(iGroup).numRuns(iSub);
+    for iRun = 1:nbRuns
+
+      % get the filename for this bold run for this task
+      [fileName, subFuncDataDir] = getBoldFilename( ...
+                                                   BIDS, ...
+                                                   subID, sessions{iSes}, ...
+                                                   runs{iRun}, opt);
+
+      % check that the file with the right prefix exist
+      files = validationInputFile(subFuncDataDir, fileName, prefix);
+
+      % add the files to list
+      allFilesTemp = cellstr(files);
+      allFiles = [allFiles; allFilesTemp]; %#ok<AGROW>
+      sesCounter = sesCounter + 1;
 
     end
+  end
 
-    allFiles = [];
-    sesCounter = 1;
+  opt.allFiles = allFiles;
 
-    for iSes = 1:nbSessions        % For each session
+  % get the masks
+  anatMaskFileName = fullfile(subFuncDataDir, '..', ...
+                              'anat', 'msub-,', ...
+                              opt.subject, '_ses-001_T1w_mask.nii');
 
-        % get all runs for that subject across all sessions
-        [runs, nbRuns] = getInfo(BIDS, subID, opt, 'Runs', sessions{iSes});
+  funcMaskFileName = fullfile(subFuncDataDir, ...
+                              ['meanasub-', opt.subject{1}, ...
+                               '_ses-001_task-,', opt.taskName, ...
+                               '_run-001_bold.nii']);
 
-        % numRuns = group(iGroup).numRuns(iSub);
-        for iRun = 1:nbRuns
-
-            % get the filename for this bold run for this task
-            [fileName, subFuncDataDir] = getBoldFilename( ...
-                                                         BIDS, ...
-                                                         subID, sessions{iSes}, ...
-                                                         runs{iRun}, opt);
-
-            % check that the file with the right prefix exist
-            files = validationInputFile(subFuncDataDir, fileName, prefix);
-
-            % add the files to list
-            allFilesTemp = cellstr(files);
-            allFiles = [allFiles; allFilesTemp]; %#ok<AGROW>
-            sesCounter = sesCounter + 1;
-
-        end
-    end
-
-    opt.allFiles = allFiles;
-
-    % get the masks
-    anatMaskFileName = fullfile(subFuncDataDir, '..', ...
-                                'anat', 'msub-,', ...
-                                opt.subject, '_ses-001_T1w_mask.nii');
-
+  if strcmp(opt.space, 'individual')
     funcMaskFileName = fullfile(subFuncDataDir, ...
-                                ['meanasub-', opt.subject{1}, ...
-                                 '_ses-001_task-,', opt.taskName, ...
+                                ['meanuasub-', opt.subject{1}, ...
+                                 '_ses-001_task-', opt.taskName, ...
                                  '_run-001_bold.nii']);
+  end
 
-    if strcmp(opt.space, 'individual')
-        funcMaskFileName = fullfile(subFuncDataDir, ...
-                                    ['meanuasub-', opt.subject{1}, ...
-                                     '_ses-001_task-', opt.taskName, ...
-                                     '_run-001_bold.nii']);
-    end
-
-    opt.anatMaskFileName = anatMaskFileName;
-    opt.funcMaskFileName = funcMaskFileName;
+  opt.anatMaskFileName = anatMaskFileName;
+  opt.funcMaskFileName = funcMaskFileName;
 
 end
 
 function destinationDir = createOutputDirectory(opt)
 
-    subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB');
-    subject = ['sub-', opt.subject{1}];
-    session = ['ses-', opt.session{1}];
-    stepFolder = ['step', num2str(opt.stepSize)];
-    dirsToMake = {subject, session, stepFolder};
+  subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB');
+  subject = ['sub-', opt.subject{1}];
+  session = ['ses-', opt.session{1}];
+  stepFolder = ['step', num2str(opt.stepSize)];
+  dirsToMake = {subject, session, stepFolder};
 
-    % create subject folder witn subfolders if doesn't exist
-    if ~exist(fullfile(subjectDestDir, subject, session, stepFolder), 'dir')
-        for idir = 1:length(dirsToMake)
-            Thisdir = fullfile(subjectDestDir, dirsToMake{1:idir});
-            if ~exist(Thisdir)
-                mkdir(Thisdir);
-            end
-        end
+  % create subject folder witn subfolders if doesn't exist
+  if ~exist(fullfile(subjectDestDir, subject, session, stepFolder), 'dir')
+    for idir = 1:length(dirsToMake)
+      Thisdir = fullfile(subjectDestDir, dirsToMake{1:idir});
+      if ~exist(Thisdir)
+        mkdir(Thisdir);
+      end
     end
+  end
 
-    % output the results
-    destinationDir =  fullfile(subjectDestDir, subject, session, stepFolder);
+  % output the results
+  destinationDir =  fullfile(subjectDestDir, subject, session, stepFolder);
 
 end

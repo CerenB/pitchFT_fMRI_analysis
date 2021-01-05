@@ -16,7 +16,7 @@ opt = getOptionPitchFT();
 checkDependencies();
 
 %% Run batches
-%reportBIDS(opt);
+% reportBIDS(opt);
 bidsCopyRawFolder(opt, 1);
 % %
 % % % In case you just want to run segmentation and skull stripping
