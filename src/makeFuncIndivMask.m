@@ -1,4 +1,4 @@
-function mask = makeNativeSpaceMask(opt)
+function mask = makeFuncIndivMask(opt)
 
   % function uses a mean functional image to create individual space mask
 
@@ -19,7 +19,8 @@ function mask = makeNativeSpaceMask(opt)
   if ~exist(betImage)
       
       rhythmBlockFuncDir = strrep(imagePath,opt.taskName,'RhythmBlock');
-      betOrigImage = fullfile(rhythmBlockFuncDir,betImageName);
+      betOrigImage = strrep(fullfile(rhythmBlockFuncDir,betImageName),...
+                            opt.taskName,'RhythmBlock');
       copyfile(betOrigImage,betImage)
  
   end
