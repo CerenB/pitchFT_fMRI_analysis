@@ -14,7 +14,7 @@ cd(fileparts(mfilename('fullpath')));
 
 addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
 warning('off');
-% addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
 % spm fmri
 
 % set and check dependencies (lib)
@@ -22,10 +22,11 @@ initEnv();
 checkDependencies();
 
 % subject to run
-opt.subject = {'003'};
+opt.subject = {'008'};
 opt.session = {'001'};
 opt.taskName = 'PitchFT';
 opt.space = 'individual';
+opt.anatMask = 1;
 
 opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
                               '..', '..', '..',  'derivatives', 'cpp_spm');
@@ -37,7 +38,10 @@ opt = getSpecificBoldFiles(opt);
 allRunFiles = opt.allFiles;
 
 % use a predefined mask, only calculate voxels within the mask
-maskFileName = makeNativeSpaceMask(opt);
+maskFileName = opt.anatMaskFileName;
+if ~anatMask == 1 
+    maskFileName = makeNativeSpaceMask(opt);
+end
 maskFile = spm_vol(maskFileName);
 mask = spm_read_vols(maskFile);
 
@@ -286,21 +290,27 @@ function opt = getSpecificBoldFiles(opt)
   opt.allFiles = allFiles;
 
   % get the masks
-  anatMaskFileName = fullfile(subFuncDataDir, '..', ...
-                              'anat', 'msub-,', ...
-                              opt.subject, '_ses-001_T1w_mask.nii');
+%   % this has anat dimensions - 256x256x156
+%   anatMaskFileName = fullfile(subFuncDataDir, '..', ...
+%                               'anat', 'msub-,', ...
+%                               opt.subject, '_ses-001_T1w_mask.nii');
+  anatMaskFileName = fullfile(subFuncDataDir, ...
+                                ['meanuasub-', opt.subject{1}, ...
+                                 '_ses-001_task-', opt.taskName, ...
+                                 '_run-001_bold_mask.nii']);
+                          
+  % meanuasub-008_ses-001_task-RhythmBlock_run-001_bold_mask
+%   meanFuncFileName = fullfile(subFuncDataDir, ...
+%                               ['meanasub-', opt.subject{1}, ...
+%                                '_ses-001_task-,', opt.taskName, ...
+%                                '_run-001_bold.nii']);
 
-  meanFuncFileName = fullfile(subFuncDataDir, ...
-                              ['meanasub-', opt.subject{1}, ...
-                               '_ses-001_task-,', opt.taskName, ...
-                               '_run-001_bold.nii']);
-
-  if strcmp(opt.space, 'individual')
+%   if strcmp(opt.space, 'individual')
     meanFuncFileName = fullfile(subFuncDataDir, ...
                                 ['meanuasub-', opt.subject{1}, ...
                                  '_ses-001_task-', opt.taskName, ...
                                  '_run-001_bold.nii']);
-  end
+%   end
 
   opt.anatMaskFileName = anatMaskFileName;
   opt.funcMaskFileName = meanFuncFileName;
@@ -309,7 +319,10 @@ end
 
 function destinationDir = createOutputDirectory(opt)
 
-  subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB');
+  subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB_funcmask');
+  if opt.anatMask
+      subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB_anatmask');
+  end
   subject = ['sub-', opt.subject{1}];
   session = ['ses-', opt.session{1}];
   stepFolder = ['step', num2str(opt.stepSize)];
