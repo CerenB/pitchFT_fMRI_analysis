@@ -1,4 +1,4 @@
-function maskPath = makeNativeSpaceMask(imagePath)
+function mask = makeNativeSpaceMask(opt)
 
   % function uses a mean functional image to create individual space mask
 
@@ -6,19 +6,33 @@ function maskPath = makeNativeSpaceMask(imagePath)
   % go to mricron and create skull stripped mean functional image
   % by using FSL BET function
   % in the future think about implementing FSL BET into matlab
-  [path, imageName, ext] = fileparts(imagePath);
+  
+  % STEP 1.2
+  % read already created bet05 image
+  image = opt.funcMaskFileName;
+  [imagePath, imageName, ext] = fileparts(image);
   betImageName = ['bet05_', imageName, ext];
-  betImagePath = fullfile(path, betImageName);
+  betImage = fullfile(imagePath, betImageName);
 
+  % STEP 1.3
+  % copy created bet05_meanfunc_mask images & rename with taskname
+  if ~exist(betImage)
+      
+      rhythmBlockFuncDir = strrep(imagePath,opt.taskName,'RhythmBlock');
+      betOrigImage = fullfile(rhythmBlockFuncDir,betImageName);
+      copyfile(betOrigImage,betImage)
+ 
+  end
+  
   % create mask name
   maskFileName = ['mask', betImageName];
-  maskPath = fullfile(path, maskFileName);
+  mask = fullfile(imagePath, maskFileName);
 
   % STEP 2
-  if ~exist(maskPath)
+  if ~exist(mask)
     % Create a template & load the mask
     % A = load_untouch_nii('bet_05_meanuasub-pil001-PitchFT_run-001.nii');
-    A = load_untouch_nii(betImagePath);
+    A = load_untouch_nii(betImage);
 
     C = A;
     C.fileprefix = 'C';
@@ -27,7 +41,7 @@ function maskPath = makeNativeSpaceMask(imagePath)
     idx = find(A.img > 0);
     A.img(idx) = 1;
     C.img = A.img;
-    save_untouch_nii(C, maskPath);
+    save_untouch_nii(C, mask);
   end
 
 end

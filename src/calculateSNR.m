@@ -37,7 +37,7 @@ opt = getSpecificBoldFiles(opt);
 allRunFiles = opt.allFiles;
 
 % use a predefined mask, only calculate voxels within the mask
-maskFileName = makeNativeSpaceMask(opt.funcMaskFileName);
+maskFileName = makeNativeSpaceMask(opt);
 maskFile = spm_vol(maskFileName);
 mask = spm_read_vols(maskFile);
 
@@ -290,20 +290,20 @@ function opt = getSpecificBoldFiles(opt)
                               'anat', 'msub-,', ...
                               opt.subject, '_ses-001_T1w_mask.nii');
 
-  funcMaskFileName = fullfile(subFuncDataDir, ...
+  meanFuncFileName = fullfile(subFuncDataDir, ...
                               ['meanasub-', opt.subject{1}, ...
                                '_ses-001_task-,', opt.taskName, ...
                                '_run-001_bold.nii']);
 
   if strcmp(opt.space, 'individual')
-    funcMaskFileName = fullfile(subFuncDataDir, ...
+    meanFuncFileName = fullfile(subFuncDataDir, ...
                                 ['meanuasub-', opt.subject{1}, ...
                                  '_ses-001_task-', opt.taskName, ...
                                  '_run-001_bold.nii']);
   end
 
   opt.anatMaskFileName = anatMaskFileName;
-  opt.funcMaskFileName = funcMaskFileName;
+  opt.funcMaskFileName = meanFuncFileName;
 
 end
 
