@@ -40,7 +40,7 @@ allRunFiles = opt.allFiles;
 % use a predefined mask, only calculate voxels within the mask
 maskFileName = opt.anatMaskFileName;
 if ~anatMask == 1 
-    maskFileName = makeNativeSpaceMask(opt);
+    maskFileName = makeFuncIndivMask(opt);
 end
 maskFile = spm_vol(maskFileName);
 mask = spm_read_vols(maskFile);
