@@ -6,7 +6,7 @@ function mask = makeFuncIndivMask(opt)
   % go to mricron and create skull stripped mean functional image
   % by using FSL BET function
   % in the future think about implementing FSL BET into matlab
-  
+
   % STEP 1.2
   % read already created bet05 image
   image = opt.funcMaskFileName;
@@ -17,14 +17,14 @@ function mask = makeFuncIndivMask(opt)
   % STEP 1.3
   % copy created bet05_meanfunc_mask images & rename with taskname
   if ~exist(betImage)
-      
-      rhythmBlockFuncDir = strrep(imagePath,opt.taskName,'RhythmBlock');
-      betOrigImage = strrep(fullfile(rhythmBlockFuncDir,betImageName),...
-                            opt.taskName,'RhythmBlock');
-      copyfile(betOrigImage,betImage)
- 
+
+    rhythmBlockFuncDir = strrep(imagePath, opt.taskName, 'RhythmBlock');
+    betOrigImage = strrep(fullfile(rhythmBlockFuncDir, betImageName), ...
+                          opt.taskName, 'RhythmBlock');
+    copyfile(betOrigImage, betImage);
+
   end
-  
+
   % create mask name
   maskFileName = ['mask', betImageName];
   mask = fullfile(imagePath, maskFileName);

@@ -1,11 +1,11 @@
 clear;
 clc;
 
-cd(fileparts(mfilename('fullpath')));
+% cd(fileparts(mfilename('fullpath')));
 
 addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
 warning('off');
-% addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
 % spm fmri
 
 initEnv();
@@ -17,14 +17,16 @@ checkDependencies();
 
 %% Run batches
 % reportBIDS(opt);
-bidsCopyRawFolder(opt, 1);
+% bidsCopyRawFolder(opt, 1);
 % %
 % % % In case you just want to run segmentation and skull stripping
 % % % Skull stripping is also included in 'bidsSpatialPrepro'
 %    bidsSegmentSkullStrip(opt);
 % %
+tic;
 bidsSTC(opt);
 % %
+
 bidsSpatialPrepro(opt);
 
 % Quality control
@@ -35,6 +37,8 @@ functionalQA(opt);
 % smoothing
 FWHM = 3;
 bidsSmoothing(FWHM, opt);
+toc;
+
 %
 % % The following crash on Travis CI
 % bidsFFX('specifyAndEstimate', opt, FWHM);

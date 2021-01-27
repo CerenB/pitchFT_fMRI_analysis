@@ -12,9 +12,10 @@ function opt = getOptionPitchFT()
   % group of subjects to analyze
   opt.groups = {''};
   % suject to run in each group
-  opt.subjects = {'001', '002', '003', '004', '005', '006','007'}; 
+  opt.subjects = {'001', '002', '003', '004', '005', '006', '007', ...
+                  '008', '009', '010', '011'};
   % '008', '009', '010', '011'
-  % '001', '002', '003', '004', '005', '006','007',  
+  % '001', '002', '003', '004', '005', '006','007',
 
   % Uncomment the lines below to run preprocessing
   % - don't use realign and unwarp
@@ -39,7 +40,7 @@ function opt = getOptionPitchFT()
   % to add the hrf temporal derivative = [1 0]
   % to add the hrf temporal and dispersion derivative = [1 1]
   % opt.model.hrfDerivatives = [0 0];
-  
+
   opt.sliceOrder = [];
 
   opt.STC_referenceSlice = [];
@@ -47,8 +48,7 @@ function opt = getOptionPitchFT()
   % Options for normalize
   % Voxel dimensions for resampling at normalization of functional data or leave empty [ ].
   opt.funcVoxelDims = [2.6 2.6 2.6];
-  
-  
+
   opt.parallelize.do = true;
   opt.parallelize.nbWorkers = 4;
   opt.parallelize.killOnExit = true;
