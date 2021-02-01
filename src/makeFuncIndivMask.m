@@ -7,11 +7,47 @@ function mask = makeFuncIndivMask(opt)
   % by using FSL BET function
   % in the future think about implementing FSL BET into matlab
 
-  % STEP 1.2
-  % read already created bet05 image
+  % read the mask image
   image = opt.funcMaskFileName;
   [imagePath, imageName, ext] = fileparts(image);
+
+  % the output name for FSL BET image (skull stripped)
   betImageName = ['bet05_', imageName, ext];
+
+  %%%%%% SPM skull stripping - with Anat atm
+  printProcessingSubject(groupName, iSub, subID);
+
+  matlabbatch = [];
+  matlabbatch = setBatchSelectAnat(matlabbatch, BIDS, opt, subID);
+  opt.orderBatches.selectAnat = 1;
+
+  % dependency from file selector ('Anatomical')
+  matlabbatch = setBatchSegmentation(matlabbatch, opt);
+  opt.orderBatches.segment = 2;
+
+  matlabbatch = setBatchSkullStripping(matlabbatch, BIDS, subID, opt);
+
+  saveAndRunWorkflow(matlabbatch, 'segment_skullstrip', opt, subID);
+
+  %%%%%
+
+  %%%%%
+  % FSL BET
+  setenv('FSLOUTPUTTYPE', 'NIFTI');
+  BET = sprintf('%s %s %s%s', 'bet ', imageName, betImageName, options);
+  fprintf('\n%s %s', 'Running brain extraction for: ', fname);
+  BETerror = unix(BET);
+
+  if BETerror
+    fprintf('%s\n', '  ERROR!!!!');
+  else
+    fprintf('%s\n', '  OK!!!');
+  end
+  %%%%%
+
+  % STEP 1.2
+  % read already created bet05 image
+
   betImage = fullfile(imagePath, betImageName);
 
   % STEP 1.3
@@ -46,3 +82,8 @@ function mask = makeFuncIndivMask(opt)
   end
 
 end
+
+% function useBetFsl
+%
+%
+% end
