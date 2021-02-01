@@ -25,7 +25,7 @@ checkDependencies();
 opt.subject = {'011'};
 opt.session = {'001'};
 opt.taskName = 'PitchFT';
-opt.space = 'individual';
+opt.space = 'MNI'; % MNI, individual
 opt.anatMask = 0;
 opt.FWHM = 3;
 
@@ -260,7 +260,6 @@ function opt = getSpecificBoldFiles(opt)
   [sessions, nbSessions] = getInfo(BIDS, subID, opt, 'Sessions');
 
   % creates prefix to look for
-  
   prefix = ['s',num2str(opt.FWHM),'wa'];
   if strcmp(opt.space, 'individual')
     prefix = ['s',num2str(opt.FWHM),'ua'];
@@ -314,12 +313,16 @@ function opt = getSpecificBoldFiles(opt)
   %                                '_ses-001_task-,', opt.taskName, ...
   %                                '_run-001_bold.nii']);
 
-  %   if strcmp(opt.space, 'individual')
+  %
   meanFuncFileName = fullfile(subFuncDataDir, ...
                               ['meanuasub-', opt.subject{1}, ...
                                '_ses-001_task-', opt.taskName, ...
                                '_run-001_bold.nii']);
-  %   end
+                           
+  % ad normalized image option by adding prefix w-                        
+  if strcmp(opt.space, 'MNI')
+      meanFuncFileName = ['w',meanFuncFileName];
+  end
 
   opt.anatMaskFileName = anatMaskFileName;
   opt.funcMaskFileName = meanFuncFileName;
