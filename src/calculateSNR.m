@@ -27,6 +27,7 @@ opt.session = {'001'};
 opt.taskName = 'PitchFT';
 opt.space = 'individual';
 opt.anatMask = 0;
+opt.FWHM = 3;
 
 opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
                               '..', '..', '..',  'derivatives', 'cpp_spm');
@@ -242,6 +243,12 @@ FileName = fullfile(opt.destinationDir, ['AvgSNR_sub-', opt.subject{1}, ...
 
 save_nii(new_nii, FileName);
 
+
+
+
+
+
+
 function opt = getSpecificBoldFiles(opt)
 
   % we let SPM figure out what is in this BIDS data set
@@ -253,10 +260,10 @@ function opt = getSpecificBoldFiles(opt)
   [sessions, nbSessions] = getInfo(BIDS, subID, opt, 'Sessions');
 
   % creates prefix to look for
-  prefix = 's3wa';
+  
+  prefix = ['s',num2str(opt.FWHM),'wa'];
   if strcmp(opt.space, 'individual')
-    prefix = 's3ua';
-
+    prefix = ['s',num2str(opt.FWHM),'ua'];
   end
 
   allFiles = [];
@@ -294,10 +301,12 @@ function opt = getSpecificBoldFiles(opt)
   %   anatMaskFileName = fullfile(subFuncDataDir, '..', ...
   %                               'anat', 'msub-,', ...
   %                               opt.subject, '_ses-001_T1w_mask.nii');
+  % cpp-spm meanfunc image:
   anatMaskFileName = fullfile(subFuncDataDir, ...
                               ['meanuasub-', opt.subject{1}, ...
                                '_ses-001_task-', opt.taskName, ...
                                '_run-001_bold_mask.nii']);
+                           
 
   % meanuasub-008_ses-001_task-RhythmBlock_run-001_bold_mask
   %   meanFuncFileName = fullfile(subFuncDataDir, ...
@@ -314,6 +323,9 @@ function opt = getSpecificBoldFiles(opt)
 
   opt.anatMaskFileName = anatMaskFileName;
   opt.funcMaskFileName = meanFuncFileName;
+  
+  %save prefix
+  opt.prefix = prefix;
 
 end
 
@@ -323,6 +335,7 @@ function destinationDir = createOutputDirectory(opt)
   if opt.anatMask
     subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB_anatmask');
   end
+  
   subject = ['sub-', opt.subject{1}];
   session = ['ses-', opt.session{1}];
   stepFolder = ['step', num2str(opt.stepSize)];
