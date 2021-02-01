@@ -24,21 +24,23 @@ checkDependencies();
 %    bidsSegmentSkullStrip(opt);
 % %
 tic;
-bidsSTC(opt);
+% bidsSTC(opt);
 % %
 
 bidsSpatialPrepro(opt);
 
 % Quality control
-anatomicalQA(opt);
-bidsResliceTpmToFunc(opt);
-functionalQA(opt);
+% anatomicalQA(opt);
+% bidsResliceTpmToFunc(opt);
+% functionalQA(opt);
 
 % smoothing
 FWHM = 3;
 bidsSmoothing(FWHM, opt);
 toc;
 
+FWHM = 6;
+bidsSmoothing(FWHM, opt);
 %
 % % The following crash on Travis CI
 % bidsFFX('specifyAndEstimate', opt, FWHM);
