@@ -21,17 +21,16 @@ addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
 initEnv();
 checkDependencies();
 
-% subject to run
-opt.subject = {'011'};
-opt.session = {'001'};
-opt.taskName = 'PitchFT';
-opt.space = 'MNI'; % MNI, individual
+% get option for parameters
+opt = getOptionPitchFT();
+
+%subID = opt.subjects{1};
+%opt.session = {'001'};
+
 opt.anatMask = 0;
-opt.FWHM = 3;
-
-opt.derivativesDir = fullfile(fileparts(mfilename('fullpath')), ...
-                              '..', '..', '..',  'derivatives', 'cpp_spm');
-
+opt.FWHM = 3; % 3 or 6mm smoothing
+ 
+  
 % we let SPM figure out what is in this BIDS data set
 opt = getSpecificBoldFiles(opt);
 
@@ -203,7 +202,7 @@ for iRun = 1:nRuns
   new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 
   % save the results
-  FileName = fullfile(opt.destinationDir, ['SNR_sub-', opt.subject{1}, ...
+  FileName = fullfile(opt.destinationDir, ['SNR_sub-', opt.subjects{1}, ...
                                            '_ses-', opt.session{1}, ...
                                            '_task-', opt.taskName, ...
                                            '_run-00', num2str(iRun), ...
@@ -236,7 +235,7 @@ new_nii = make_nii(zmap3Dmask);
 new_nii.hdr = mask_new.hdr;
 new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 
-FileName = fullfile(opt.destinationDir, ['AvgSNR_sub-', opt.subject{1}, ...
+FileName = fullfile(opt.destinationDir, ['AvgSNR_sub-', opt.subjects{1}, ...
                                          '_ses-', opt.session{1}, ...
                                          '_task-', opt.taskName, ...
                                          '_bold.nii']);
@@ -245,19 +244,26 @@ save_nii(new_nii, FileName);
 
 function opt = getSpecificBoldFiles(opt)
 
-  % we let SPM figure out what is in this BIDS data set
-  BIDS = spm_BIDS(opt.derivativesDir);
 
-  subID = opt.subject(1);
+  [~, opt, BIDS] = getData(opt);
+  
+
+  % we let SPM figure out what is in this BIDS data set
+ % BIDS = spm_BIDS(opt.derivativesDir);
+
+  subID = opt.subjects(1);
 
   % identify sessions for this subject
   [sessions, nbSessions] = getInfo(BIDS, subID, opt, 'Sessions');
 
-  % creates prefix to look for
-  prefix = ['s', num2str(opt.FWHM), 'wa'];
-  if strcmp(opt.space, 'individual')
-    prefix = ['s', num2str(opt.FWHM), 'ua'];
-  end
+%   % creates prefix to look for
+%   prefix = ['s', num2str(opt.FWHM), 'wa'];
+%   if strcmp(opt.space, 'individual')
+%     prefix = ['s', num2str(opt.FWHM), 'ua'];
+%   end
+  
+  % get prefix for smoothed image
+  [prefix, ~] = getPrefix('ffx', opt, opt.FWHM);
 
   allFiles = [];
   sesCounter = 1;
@@ -289,26 +295,31 @@ function opt = getSpecificBoldFiles(opt)
 
   opt.allFiles = allFiles;
 
+  
+  
+  % [meanImage, meanFuncDir] = getMeanFuncFilename(BIDS, subID, opt);
+  
+  
   % get the masks
   %   % this has anat dimensions - 256x256x156
   %   anatMaskFileName = fullfile(subFuncDataDir, '..', ...
   %                               'anat', 'msub-,', ...
-  %                               opt.subject, '_ses-001_T1w_mask.nii');
+  %                               opt.subjects, '_ses-001_T1w_mask.nii');
   % cpp-spm meanfunc image:
   anatMaskFileName = fullfile(subFuncDataDir, ...
-                              ['meanuasub-', opt.subject{1}, ...
+                              ['meanuasub-', opt.subjects{1}, ...
                                '_ses-001_task-', opt.taskName, ...
                                '_run-001_bold_mask.nii']);
 
   % meanuasub-008_ses-001_task-RhythmBlock_run-001_bold_mask
   %   meanFuncFileName = fullfile(subFuncDataDir, ...
-  %                               ['meanasub-', opt.subject{1}, ...
+  %                               ['meanasub-', opt.subjects{1}, ...
   %                                '_ses-001_task-,', opt.taskName, ...
   %                                '_run-001_bold.nii']);
 
   %
   meanFuncFileName = fullfile(subFuncDataDir, ...
-                              ['meanuasub-', opt.subject{1}, ...
+                              ['meanuasub-', opt.subjects{1}, ...
                                '_ses-001_task-', opt.taskName, ...
                                '_run-001_bold.nii']);
 
@@ -332,7 +343,7 @@ function destinationDir = createOutputDirectory(opt)
     subjectDestDir = fullfile(opt.derivativesDir, '..', 'FFT_RnB_anatmask');
   end
 
-  subject = ['sub-', opt.subject{1}];
+  subject = ['sub-', opt.subjects{1}];
   session = ['ses-', opt.session{1}];
   stepFolder = ['step', num2str(opt.stepSize)];
   dirsToMake = {subject, session, stepFolder};
