@@ -244,23 +244,15 @@ save_nii(new_nii, FileName);
 
 function opt = getSpecificBoldFiles(opt)
 
-
-  [~, opt, BIDS] = getData(opt);
-  
-
   % we let SPM figure out what is in this BIDS data set
- % BIDS = spm_BIDS(opt.derivativesDir);
+  [~, opt, BIDS] = getData(opt);
 
   subID = opt.subjects(1);
 
+  %% Get functional files for FFT
   % identify sessions for this subject
   [sessions, nbSessions] = getInfo(BIDS, subID, opt, 'Sessions');
 
-%   % creates prefix to look for
-%   prefix = ['s', num2str(opt.FWHM), 'wa'];
-%   if strcmp(opt.space, 'individual')
-%     prefix = ['s', num2str(opt.FWHM), 'ua'];
-%   end
   
   % get prefix for smoothed image
   [prefix, ~] = getPrefix('ffx', opt, opt.FWHM);
@@ -273,7 +265,6 @@ function opt = getSpecificBoldFiles(opt)
     % get all runs for that subject across all sessions
     [runs, nbRuns] = getInfo(BIDS, subID, opt, 'Runs', sessions{iSes});
 
-    % numRuns = group(iGroup).numRuns(iSub);
     for iRun = 1:nbRuns
 
       % get the filename for this bold run for this task
@@ -296,37 +287,24 @@ function opt = getSpecificBoldFiles(opt)
   opt.allFiles = allFiles;
 
   
-  
-  % [meanImage, meanFuncDir] = getMeanFuncFilename(BIDS, subID, opt);
-  
-  
-  % get the masks
-  %   % this has anat dimensions - 256x256x156
-  %   anatMaskFileName = fullfile(subFuncDataDir, '..', ...
-  %                               'anat', 'msub-,', ...
-  %                               opt.subjects, '_ses-001_T1w_mask.nii');
-  % cpp-spm meanfunc image:
-  anatMaskFileName = fullfile(subFuncDataDir, ...
-                              ['meanuasub-', opt.subjects{1}, ...
-                               '_ses-001_task-', opt.taskName, ...
-                               '_run-001_bold_mask.nii']);
+  %% get the masks for FFT
 
-  % meanuasub-008_ses-001_task-RhythmBlock_run-001_bold_mask
-  %   meanFuncFileName = fullfile(subFuncDataDir, ...
-  %                               ['meanasub-', opt.subjects{1}, ...
-  %                                '_ses-001_task-,', opt.taskName, ...
-  %                                '_run-001_bold.nii']);
-
-  %
-  meanFuncFileName = fullfile(subFuncDataDir, ...
-                              ['meanuasub-', opt.subjects{1}, ...
-                               '_ses-001_task-', opt.taskName, ...
-                               '_run-001_bold.nii']);
-
-  % ad normalized image option by adding prefix w-
+  % get mean image
+  [meanImage, meanFuncDir] = getMeanFuncFilename(BIDS, subID, opt);
+  meanFuncFileName = fullfile(meanFuncDir, meanImage);
+  
+  % normalized image option by adding prefix w-
   if strcmp(opt.space, 'MNI')
-    meanFuncFileName = ['w', meanFuncFileName];
+    meanFuncFileName = fullfile(meanFuncDir,['w', meanImage]);
   end
+  
+  % think about it again % % % % 
+  % instead of segmented meanfunc image here
+  % get native-spaced resliced anat (cpp-spm pipeline) image:
+  [~,meanImageName, ext] = fileparts(meanImage);
+  anatMaskFileName = fullfile(meanFuncDir, ...
+                              [meanImageName,'_mask',ext]);
+
 
   opt.anatMaskFileName = anatMaskFileName;
   opt.funcMaskFileName = meanFuncFileName;
