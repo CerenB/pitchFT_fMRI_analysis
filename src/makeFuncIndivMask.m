@@ -17,13 +17,15 @@ function mask = makeFuncIndivMask(opt)
   %%%%%% SPM skull stripping - with Anat atm
   printProcessingSubject(groupName, iSub, subID);
 
-  matlabbatch = [];
+  
   matlabbatch = setBatchSelectAnat(matlabbatch, BIDS, opt, subID);
   opt.orderBatches.selectAnat = 1;
 
   % dependency from file selector ('Anatomical')
+  matlabbatch = [];
   matlabbatch = setBatchSegmentation(matlabbatch, opt);
-  opt.orderBatches.segment = 2;
+  opt.orderBatches.segment = 1;
+  opt.orderBatches.skullStripping = 2;
 
   matlabbatch = setBatchSkullStripping(matlabbatch, BIDS, subID, opt);
 
