@@ -79,15 +79,19 @@ for iRun = 1:nRuns
   fprintf('Read in file ... \n');
 
   % choose current BOLD file
-  boldFileName = allRunFiles{iRun};
+  boldFile = allRunFiles{iRun};
+  
+  % get file name to-be saved
+  [boldFileDir,boldFileName, ext] = fileparts(boldFile);
+  
   % read/load bold file
-  boldFile = spm_vol(boldFileName);
+  boldFile = spm_vol(boldFile);
   signal = spm_read_vols(boldFile); % check the load_untouch_nii to compare
   signal = reshape(signal, [size(signal, 1) * size(signal, 2) * ...
                             size(signal, 3) size(signal, 4)]);
 
   % find cyclic volume
-  totalVol = length(spm_vol(boldFileName));
+  totalVol = length(spm_vol(boldFile));
   sequenceVol = totalVol - onsetDelay - endDelay;
 
   % remove the first 4 volumes, using this step to make the face stimulus onset at 0
@@ -202,11 +206,7 @@ for iRun = 1:nRuns
   new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 
   % save the results
-  FileName = fullfile(opt.destinationDir, ['SNR_sub-', opt.subjects{1}, ...
-                                           '_ses-', opt.session{1}, ...
-                                           '_task-', opt.taskName, ...
-                                           '_run-00', num2str(iRun), ...
-                                           '_bold.nii']);
+  FileName = fullfile(opt.destinationDir, ['SNR_', boldFileName, ext]);
 
   save_nii(new_nii, FileName);
 
@@ -235,10 +235,7 @@ new_nii = make_nii(zmap3Dmask);
 new_nii.hdr = mask_new.hdr;
 new_nii.hdr.dime.dim(2:5) = [dims(1) dims(2) dims(3) 1];
 
-FileName = fullfile(opt.destinationDir, ['AvgSNR_sub-', opt.subjects{1}, ...
-                                         '_ses-', opt.session{1}, ...
-                                         '_task-', opt.taskName, ...
-                                         '_bold.nii']);
+FileName = fullfile(opt.destinationDir, ['AvgSNR_', boldFileName, ext]);
 
 save_nii(new_nii, FileName);
 
