@@ -4,3 +4,6 @@
 [submodule "lib/CPP_BIDS_SPM_pipeline"]
 	path = lib/CPP_BIDS_SPM_pipeline
 	url = https://github.com/cpp-lln-lab/CPP_BIDS_SPM_pipeline.git
+[submodule "lib/FFT_fMRI_analysis"]
+	path = lib/FFT_fMRI_analysis
+	url = https://github.com/CerenB/FFT_fMRI_analysis
