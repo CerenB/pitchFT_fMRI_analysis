@@ -2,12 +2,16 @@ clear;
 clc;
 
 % cd(fileparts(mfilename('fullpath')));
+pth = fileparts(mfilename('fullpath'));
+addpath(fullfile(pth, '..'));
 
-addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
+% spm fmri
 warning('off');
 addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
-% spm fmri
 
+
+
+% add cpp-spm lib
 initEnv();
 
 % get all the parameters needed
