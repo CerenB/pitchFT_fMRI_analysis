@@ -48,6 +48,3 @@ bidsSmoothing(FWHM, opt);
 
 % bidsResults(opt, FWHM);
 % isMVPA = false;
-
-
-

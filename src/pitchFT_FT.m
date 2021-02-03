@@ -1,5 +1,3 @@
-
-
 clear;
 clc;
 
@@ -18,8 +16,7 @@ opt = getOptionPitchFT();
 % check for dependencies are set right
 checkDependencies();
 
-
-%% FFT analysis 
+%% FFT analysis
 
 opt.anatMask = 0;
 opt.FWHM = 3; % 3 or 6mm smoothing
@@ -27,6 +24,5 @@ opt.FWHM = 3; % 3 or 6mm smoothing
 % % want to quickly chagne some parameters in opt?
 % opt.space = 'MNI'; % 'individual', 'MNI'
 % opt.subjects = {'011'};
-
 
 calculateSNR(opt);
