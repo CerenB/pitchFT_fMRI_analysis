@@ -15,9 +15,7 @@ function mask = makeFuncIndivMask(opt)
   betImageName = ['bet05_', imageName, ext];
 
   %%%%%% SPM skull stripping - with Anat atm
-  printProcessingSubject(groupName, iSub, subID);
 
-  
   matlabbatch = setBatchSelectAnat(matlabbatch, BIDS, opt, subID);
   opt.orderBatches.selectAnat = 1;
 

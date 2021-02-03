@@ -24,13 +24,12 @@ checkDependencies();
 % get option for parameters
 opt = getOptionPitchFT();
 
-%subID = opt.subjects{1};
-%opt.session = {'001'};
+% subID = opt.subjects{1};
+% opt.session = {'001'};
 
 opt.anatMask = 0;
 opt.FWHM = 3; % 3 or 6mm smoothing
- 
-  
+
 % we let SPM figure out what is in this BIDS data set
 opt = getSpecificBoldFiles(opt);
 
@@ -80,10 +79,10 @@ for iRun = 1:nRuns
 
   % choose current BOLD file
   boldFile = allRunFiles{iRun};
-  
+
   % get file name to-be saved
-  [boldFileDir,boldFileName, ext] = fileparts(boldFile);
-  
+  [boldFileDir, boldFileName, ext] = fileparts(boldFile);
+
   % read/load bold file
   boldFile = spm_vol(boldFile);
   signal = spm_read_vols(boldFile); % check the load_untouch_nii to compare
@@ -250,7 +249,6 @@ function opt = getSpecificBoldFiles(opt)
   % identify sessions for this subject
   [sessions, nbSessions] = getInfo(BIDS, subID, opt, 'Sessions');
 
-  
   % get prefix for smoothed image
   [prefix, ~] = getPrefix('ffx', opt, opt.FWHM);
 
@@ -283,25 +281,23 @@ function opt = getSpecificBoldFiles(opt)
 
   opt.allFiles = allFiles;
 
-  
   %% get the masks for FFT
 
   % get mean image
   [meanImage, meanFuncDir] = getMeanFuncFilename(BIDS, subID, opt);
   meanFuncFileName = fullfile(meanFuncDir, meanImage);
-  
+
   % normalized image option by adding prefix w-
   if strcmp(opt.space, 'MNI')
-    meanFuncFileName = fullfile(meanFuncDir,['w', meanImage]);
+    meanFuncFileName = fullfile(meanFuncDir, ['w', meanImage]);
   end
-  
-  % think about it again % % % % 
+
+  % think about it again % % % %
   % instead of segmented meanfunc image here
   % get native-spaced resliced anat (cpp-spm pipeline) image:
-  [~,meanImageName, ext] = fileparts(meanImage);
+  [~, meanImageName, ext] = fileparts(meanImage);
   anatMaskFileName = fullfile(meanFuncDir, ...
-                              [meanImageName,'_mask',ext]);
-
+                              [meanImageName, '_mask', ext]);
 
   opt.anatMaskFileName = anatMaskFileName;
   opt.funcMaskFileName = meanFuncFileName;
