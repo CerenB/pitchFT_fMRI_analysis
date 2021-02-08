@@ -25,7 +25,7 @@ checkDependencies();
 opt.anatMask = 0;
 opt.FWHM = 3; % 3 or 6mm smoothing
 opt.stepSize = 4; % 2 or 4 
-
+opt.skullstrip.threshold = 0.50;
 % % want to quickly chagne some parameters in opt?
 % opt.space = 'MNI'; % 'individual', 'MNI'
 % opt.subjects = {'011'};
