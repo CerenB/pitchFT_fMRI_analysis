@@ -27,10 +27,6 @@ function opt = getOptionPitchFT()
   % task to analyze
   opt.taskName = 'PitchFT';
 
-  % Suffix output directory for the saved jobs
-  opt.jobsDir = fullfile( ...
-                         opt.dataDir, '..', 'derivatives', ...
-                         'cpp_spm', 'JOBS', opt.taskName);
   % to add the hrf temporal derivative = [1 0]
   % to add the hrf temporal and dispersion derivative = [1 1]
   % opt.model.hrfDerivatives = [0 0];
@@ -51,29 +47,34 @@ function opt = getOptionPitchFT()
   [~, hostname] = system('hostname');
 
   if strcmp(deblank(hostname), 'tux')
-      
-    %set spm 
+
+    % set spm
     warning('off');
     addpath(genpath('/home/tomo/Documents/MATLAB/spm12'));
-        
-    opt.derivativesDir = fullfile(...
-                         '/datadisk/data/RhythmCateg-fMRI/RhythmBlock', ...
-                         'cpp_spm');
+
+    opt.derivativesDir = fullfile( ...
+                                  '/datadisk/data/RhythmCateg-fMRI/RhythmBlock', ...
+                                  'cpp_spm');
 
   elseif strcmp(deblank(hostname), 'mac-114-168.local')
-    
-      %set spm
-      warning('off');
-      addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
-      
-      % The directory where the data are located
-      opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
-                         '..', '..', '..',  'raw');
-                     
-      opt.derivativesDir = fullfile(opt.dataDir, '..', ...
-                                    'derivatives', 'cpp_spm');
-  
+
+    % set spm
+    warning('off');
+    addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+
+    % The directory where the data are located
+    opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
+                           '..', '..', '..',  'raw');
+
+    opt.derivativesDir = fullfile(opt.dataDir, '..', ...
+                                  'derivatives', 'cpp_spm');
+
   end
+
+  % Suffix output directory for the saved jobs
+  opt.jobsDir = fullfile( ...
+                         opt.dataDir, '..', 'derivatives', ...
+                         'cpp_spm', 'JOBS', opt.taskName);
   %% DO NOT TOUCH
   opt = checkOptions(opt);
   saveOptions(opt);

@@ -1,12 +1,8 @@
 clear;
 clc;
 
-% cd(fileparts(mfilename('fullpath')));
-
+% init the packages
 addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
-warning('off');
-addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
-% spm fmri
 
 initEnv();
 
