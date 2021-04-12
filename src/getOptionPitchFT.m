@@ -24,11 +24,6 @@ function opt = getOptionPitchFT()
   % - in "native" space: don't do normalization
   opt.space = 'MNI'; % 'individual', 'MNI'
 
-  % The directory where the data are located
-  opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
-                         '..', '..', '..',  'raw');
-  opt.derivativesDir = fullfile(opt.dataDir, '..');
-
   % task to analyze
   opt.taskName = 'PitchFT';
 
@@ -52,6 +47,33 @@ function opt = getOptionPitchFT()
   opt.parallelize.nbWorkers = 4;
   opt.parallelize.killOnExit = true;
 
+  %% set paths
+  [~, hostname] = system('hostname');
+
+  if strcmp(deblank(hostname), 'tux')
+      
+    %set spm 
+    warning('off');
+    addpath(genpath('/home/tomo/Documents/MATLAB/spm12'));
+        
+    opt.derivativesDir = fullfile(...
+                         '/datadisk/data/RhythmCateg-fMRI/RhythmBlock', ...
+                         'cpp_spm');
+
+  elseif strcmp(deblank(hostname), 'mac-114-168.local')
+    
+      %set spm
+      warning('off');
+      addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+      
+      % The directory where the data are located
+      opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
+                         '..', '..', '..',  'raw');
+                     
+      opt.derivativesDir = fullfile(opt.dataDir, '..', ...
+                                    'derivatives', 'cpp_spm');
+  
+  end
   %% DO NOT TOUCH
   opt = checkOptions(opt);
   saveOptions(opt);
