@@ -22,7 +22,7 @@ function opt = getOptionPitchFT()
 
   % we stay in native space (that of the T1)
   % - in "native" space: don't do normalization
-  opt.space = 'MNI'; % 'individual', 'MNI'
+  opt.space = 'individual'; % 'individual', 'MNI'
 
   % task to analyze
   opt.taskName = 'PitchFT';
