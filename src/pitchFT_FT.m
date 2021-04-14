@@ -2,22 +2,8 @@ clear;
 clc;
 
 % % cd(fileparts(mfilename('fullpath')));
-% addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
-%
-%
-% % spm fmri
-% warning('off');
-% addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
-%
+addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
 
-%%
-% paths = getPaths();
-%
-% addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
-% warning('off');
-% addpath(genpath(paths.spm));
-
-%%
 % add cpp-spm lib
 initEnv();
 
@@ -32,7 +18,14 @@ checkDependencies();
 opt.anatMask = 0;
 opt.FWHM = 3; % 3 or 6mm smoothing
 % opt.stepSize = 4; % 2 or 4
-opt.skullstrip.threshold = 0.25;
+opt.skullstrip.threshold = 0.5;
+
+% create a whole brain functional mean image mask
+% so the mask will be in the same resolution/space as the functional images
+% one may not need it if they are running bidsFFX since it creates a
+% mask.nii by default
+opt.skullstrip.mean = 1;
+opt.funcMask = bidsWholeBrainFuncMask(opt);
 
 % % want to quickly change some parameters in opt?
 % opt.space = 'MNI'; % 'individual', 'MNI'
