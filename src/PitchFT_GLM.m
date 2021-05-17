@@ -38,7 +38,7 @@ tic;
 % bidsSTC(opt);
 % %
 
-bidsSpatialPrepro(opt);
+%bidsSpatialPrepro(opt);
 
 % Quality control
 % anatomicalQA(opt);
@@ -46,6 +46,9 @@ bidsSpatialPrepro(opt);
 % functionalQA(opt);
 
 % smoothing
+FWHM = 2;
+bidsSmoothing(FWHM, opt);
+
 FWHM = 3;
 bidsSmoothing(FWHM, opt);
 toc;
