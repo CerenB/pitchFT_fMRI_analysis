@@ -22,7 +22,7 @@ function opt = getOptionPitchFT()
 
   % we stay in native space (that of the T1)
   % - in "native" space: don't do normalization
-  opt.space = 'individual'; % 'individual', 'MNI'
+  opt.space = 'MNI'; % 'individual', 'MNI'
 
   % task to analyze
   opt.taskName = 'PitchFT';
@@ -45,32 +45,23 @@ function opt = getOptionPitchFT()
 
   %% set paths
   [~, hostname] = system('hostname');
-
   if strcmp(deblank(hostname), 'tux')
-
-    % set spm
-    warning('off');
-    addpath(genpath('/home/tomo/Documents/MATLAB/spm12'));
-
+    opt.dataDir = fullfile('/datadisk/data/RhythmCateg-fMRI/RhythmBlock'); 
     opt.derivativesDir = fullfile( ...
-                                  '/datadisk/data/RhythmCateg-fMRI/RhythmBlock', ...
+                                  '/datadisk/data/RhythmCateg-fMRI/PitchFT', ...
                                   'cpp_spm');
-
   elseif strcmp(deblank(hostname), 'mac-114-168.local')
-
-    % set spm
-    warning('off');
-    addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
-
     % The directory where the data are located
     opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
-                           '..', '..', '..',  'raw');
-
+                           '..', '..', '..', 'data', 'raw');
     opt.derivativesDir = fullfile(opt.dataDir, '..', ...
                                   'derivatives', 'cpp_spm');
-
+                              
+    opt.roiDir = fullfile(fileparts(mfilename('fullpath')),  ...
+                           '..', '..', '..','..', 'RhythmCateg_ROI');
   end
-
+  
+  
   % Suffix output directory for the saved jobs
   opt.jobsDir = fullfile( ...
                          opt.dataDir, '..', 'derivatives', ...
