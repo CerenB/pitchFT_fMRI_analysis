@@ -1,34 +1,55 @@
 clear;
 clc;
 
-% % cd(fileparts(mfilename('fullpath')));
-addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
+pth = fullfile(fileparts(mfilename('fullpath')), '..');
+addpath(pth);
 
-% add cpp-spm lib
-initEnv();
+% add FFT analysis lib
+addpath(genpath(fullfile(pth, 'lib', 'FFT_fMRI_analysis')));
+
+%% set paths
+% set spm
+[~, hostname] = system('hostname');
+warning('off');
+
+if strcmp(deblank(hostname), 'tux')
+  addpath(genpath('/home/tomo/Documents/MATLAB/spm12'));
+elseif strcmp(deblank(hostname), 'mac-114-168.local')
+  warning('off');
+  addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+end
+
+% add cpp repo
+run ../lib/CPP_BIDS_SPM_pipeline/initCppSpm.m;
 
 % get all the parameters needed
 opt = getOptionPitchFT();
 
-% check for dependencies are set right
-checkDependencies();
 
 %% FFT analysis
 
 opt.anatMask = 0;
-opt.FWHM = 3; % 3 or 6mm smoothing
-% opt.stepSize = 4; % 2 or 4
-opt.skullstrip.threshold = 0.5;
+opt.maskType = 'whole-brain'; 
+[opt.funcMask, opt.maskType] = getMaskFile(opt);
 
-% create a whole brain functional mean image mask
-% so the mask will be in the same resolution/space as the functional images
-% one may not need it if they are running bidsFFX since it creates a
-% mask.nii by default
-opt.skullstrip.mean = 1;
-opt.funcMask = bidsWholeBrainFuncMask(opt);
+% want to save each run FFT results
+opt.saveEachRun = 0;
+for iSmooth = [2 3 6] % 0 2 3 or 6mm smoothing
+    
+    opt.FWHM = iSmooth; 
+    
+    opt.nStepsPerPeriod = 4;
+    calculateSNR(opt);
+end
 
-% % want to quickly change some parameters in opt?
-% opt.space = 'MNI'; % 'individual', 'MNI'
-% opt.subjects = {'011'};
+%%
+% group analysis - for now only in MNI
+% individual space would require fsaverage
+opt.nStepsPerPeriod = 4;
+opt.FWHM = 3;
+opt = groupAverageSNR(opt);
 
-calculateSNR(opt);
+
+
+
+

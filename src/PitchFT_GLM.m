@@ -1,15 +1,30 @@
 clear;
 clc;
 
-% init the packages
-addpath(fullfile(fileparts(mfilename('fullpath')), '..'));
+pth = fullfile(fileparts(mfilename('fullpath')), '..');
+addpath(pth);
 
-initEnv();
+% add FFT analysis lib
+addpath(genpath(fullfile(pth, 'lib', 'FFT_fMRI_analysis')));
+
+%% set paths
+% set spm
+[~, hostname] = system('hostname');
+warning('off');
+
+if strcmp(deblank(hostname), 'tux')
+  addpath(genpath('/home/tomo/Documents/MATLAB/spm12'));
+elseif strcmp(deblank(hostname), 'mac-114-168.local')
+  warning('off');
+  addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
+end
+
+% add cpp repo
+run ../lib/CPP_BIDS_SPM_pipeline/initCppSpm.m;
 
 % we add all the subfunctions that are in the sub directories
 opt = getOptionPitchFT();
 
-checkDependencies();
 
 %% Run batches
 % reportBIDS(opt);
@@ -20,7 +35,7 @@ checkDependencies();
 %    bidsSegmentSkullStrip(opt);
 % %
 tic;
-% bidsSTC(opt);
+bidsSTC(opt);
 % %
 
 bidsSpatialPrepro(opt);
@@ -31,12 +46,16 @@ bidsSpatialPrepro(opt);
 % functionalQA(opt);
 
 % smoothing
+FWHM = 2;
+bidsSmoothing(FWHM, opt);
+
 FWHM = 3;
 bidsSmoothing(FWHM, opt);
-toc;
 
 FWHM = 6;
 bidsSmoothing(FWHM, opt);
+
+toc;
 %
 % % The following crash on Travis CI
 % bidsFFX('specifyAndEstimate', opt, FWHM);

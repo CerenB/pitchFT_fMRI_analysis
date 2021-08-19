@@ -12,9 +12,9 @@ function opt = getOptionPitchFT()
   % group of subjects to analyze
   opt.groups = {''};
   % suject to run in each group
-  opt.subjects = {'011'};
-  % '008', '009', '010', '011'
-  % '001', '002', '003', '004', '005', '006','007',
+  opt.subjects = {'012'};
+% '001', '002', '003', '004', '005', '006',...
+%                   '007', '008', '009', '010', '011'
 
   % Uncomment the lines below to run preprocessing
   % - don't use realign and unwarp
@@ -45,32 +45,23 @@ function opt = getOptionPitchFT()
 
   %% set paths
   [~, hostname] = system('hostname');
-
   if strcmp(deblank(hostname), 'tux')
-
-    % set spm
-    warning('off');
-    addpath(genpath('/home/tomo/Documents/MATLAB/spm12'));
-
+    opt.dataDir = fullfile('/datadisk/data/RhythmCateg-fMRI/RhythmBlock'); 
     opt.derivativesDir = fullfile( ...
-                                  '/datadisk/data/RhythmCateg-fMRI/RhythmBlock', ...
+                                  '/datadisk/data/RhythmCateg-fMRI/PitchFT', ...
                                   'cpp_spm');
-
   elseif strcmp(deblank(hostname), 'mac-114-168.local')
-
-    % set spm
-    warning('off');
-    addpath(genpath('/Users/battal/Documents/MATLAB/spm12'));
-
     % The directory where the data are located
     opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
-                           '..', '..', '..',  'raw');
-
+                           '..', '..', '..', 'raw');
     opt.derivativesDir = fullfile(opt.dataDir, '..', ...
                                   'derivatives', 'cpp_spm');
-
+                              
+    opt.roiDir = fullfile(fileparts(mfilename('fullpath')),  ...
+                           '..', '..', '..','..', 'RhythmCateg_ROI');
   end
-
+  
+  
   % Suffix output directory for the saved jobs
   opt.jobsDir = fullfile( ...
                          opt.dataDir, '..', 'derivatives', ...
