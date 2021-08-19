@@ -12,10 +12,9 @@ function opt = getOptionPitchFT()
   % group of subjects to analyze
   opt.groups = {''};
   % suject to run in each group
-  opt.subjects = {'001', '002', '003', '004', '005', '006',...
-                  '007', '008', '009', '010', '011'};
-  % '008', '009', '010', '011'
-  % '001', '002', '003', '004', '005', '006','007',
+  opt.subjects = {'012'};
+% '001', '002', '003', '004', '005', '006',...
+%                   '007', '008', '009', '010', '011'
 
   % Uncomment the lines below to run preprocessing
   % - don't use realign and unwarp
@@ -54,7 +53,7 @@ function opt = getOptionPitchFT()
   elseif strcmp(deblank(hostname), 'mac-114-168.local')
     % The directory where the data are located
     opt.dataDir = fullfile(fileparts(mfilename('fullpath')), ...
-                           '..', '..', '..', 'data', 'raw');
+                           '..', '..', '..', 'raw');
     opt.derivativesDir = fullfile(opt.dataDir, '..', ...
                                   'derivatives', 'cpp_spm');
                               

@@ -35,10 +35,10 @@ opt = getOptionPitchFT();
 %    bidsSegmentSkullStrip(opt);
 % %
 tic;
-% bidsSTC(opt);
+bidsSTC(opt);
 % %
 
-%bidsSpatialPrepro(opt);
+bidsSpatialPrepro(opt);
 
 % Quality control
 % anatomicalQA(opt);
@@ -51,10 +51,11 @@ bidsSmoothing(FWHM, opt);
 
 FWHM = 3;
 bidsSmoothing(FWHM, opt);
-toc;
 
 FWHM = 6;
 bidsSmoothing(FWHM, opt);
+
+toc;
 %
 % % The following crash on Travis CI
 % bidsFFX('specifyAndEstimate', opt, FWHM);
