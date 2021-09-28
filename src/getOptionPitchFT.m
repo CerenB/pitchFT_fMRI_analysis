@@ -12,9 +12,9 @@ function opt = getOptionPitchFT()
   % group of subjects to analyze
   opt.groups = {''};
   % suject to run in each group
-  opt.subjects = {'012'};
+  opt.subjects = {'001'};
 % '001', '002', '003', '004', '005', '006',...
-%                   '007', '008', '009', '010', '011'
+%                   '007', '008', '009', '010', '011', '012'
 
   % Uncomment the lines below to run preprocessing
   % - don't use realign and unwarp
@@ -66,6 +66,10 @@ function opt = getOptionPitchFT()
   opt.jobsDir = fullfile( ...
                          opt.dataDir, '..', 'derivatives', ...
                          'cpp_spm', 'JOBS', opt.taskName);
+                     
+  opt.model.file =  ...
+        fullfile(fileparts(mfilename('fullpath')), '..', ...
+                 'model', 'model-PitchFT_smdl.json');
   %% DO NOT TOUCH
   opt = checkOptions(opt);
   saveOptions(opt);

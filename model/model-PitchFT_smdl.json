@@ -1,0 +1,74 @@
+{
+  "Name": "PitchFT Reliability",
+  "Description": "contrasts for the pitchFT design dataset",
+  "Input": {
+    "task": "PitchFT"
+  },
+  "Steps": [
+    {
+      "Level": "run",
+      "Model": {
+        "X": [
+          "trial_type.block_complex_A_1",
+          "trial_type.block_complex_B_2",
+          "trial_type.block_complex_B_3",
+          "trial_type.block_complex_B_4",
+          "trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"
+        ]
+      },
+      "AutoContrasts": [
+          "trial_type.block_complex_A_1",
+          "trial_type.block_complex_B_2",
+          "trial_type.block_complex_B_3",
+          "trial_type.block_complex_B_4"
+        ]
+    },
+    {
+      "Level": "subject",
+      "AutoContrasts": [
+          "trial_type.block_complex_A_1",
+          "trial_type.block_complex_B_2",
+          "trial_type.block_complex_B_3",
+          "trial_type.block_complex_B_4"
+        ],
+      "Contrasts": [
+        {
+          "Name": "A1_gt_B3",
+          "ConditionList": [
+            "trial_type.block_complex_A_1", "trial_type.block_complex_B_3"
+          ],
+          "weights": [1, -1],
+          "type": "t"
+        },
+        {
+          "Name": "B3_gt_A1",
+          "ConditionList": [
+            "trial_type.block_complex_A_1", "trial_type.block_complex_B_3"
+          ],
+          "weights": [-1, 1],
+          "type": "t"
+        },
+        {
+          "Name": "AllPitch",
+          "ConditionList": [
+            "trial_type.block_complex_A_1",
+            "trial_type.block_complex_B_2",
+            "trial_type.block_complex_B_3",
+            "trial_type.block_complex_B_4"
+          ],
+          "weights": [0.25, 0.25, 0.25, 0.25],
+          "type": "t"
+        }
+      ]
+    },
+    {
+      "Level": "dataset",
+      "AutoContrasts": [
+        "trial_type.block_complex_A_1", 
+        "trial_type.block_complex_B_3", 
+        "A1_gt_B3", 
+        "B3_gt_A1",
+        "AllPitch"]
+    }
+  ]
+}
