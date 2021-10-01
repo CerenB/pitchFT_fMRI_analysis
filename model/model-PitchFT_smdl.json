@@ -48,10 +48,47 @@
         ],
       "Contrasts": [
       {
-        "Name": "A1_gt_B3",
+        "Name": "A1_gt_B3_run",
         "ConditionList": [
           "trial_type.block_complex_A_1",
           "trial_type.block_complex_B_3"
+        ],
+        "weights": [1, -1],
+        "type": "t"
+      },
+      {
+        "Name": "B3_gt_A1_run",
+        "ConditionList": [
+          "trial_type.block_complex_A_1", "trial_type.block_complex_B_3"
+        ],
+        "weights": [-1, 1],
+        "type": "t"
+      },
+      {
+        "Name": "AllPitch_run",
+        "ConditionList": [
+          "trial_type.block_complex_A_1",
+          "trial_type.block_complex_B_2",
+          "trial_type.block_complex_B_3",
+          "trial_type.block_complex_B_4"
+        ],
+        "weights": [0.25, 0.25, 0.25, 0.25],
+        "type": "t"
+      }
+    ]
+  },
+  {
+    "Level": "subject",
+    "AutoContrasts": ["trial_type.block_complex_A_1",
+              "trial_type.block_complex_B_2",
+              "trial_type.block_complex_B_3",
+              "trial_type.block_complex_B_4"
+            ],
+    "Contrasts": [
+      {
+        "Name": "A1_gt_B3",
+        "ConditionList": [
+          "trial_type.block_complex_A_1", "trial_type.block_complex_B_3"
         ],
         "weights": [1, -1],
         "type": "t"
@@ -67,12 +104,9 @@
       {
         "Name": "AllPitch",
         "ConditionList": [
-          "trial_type.block_complex_A_1",
-          "trial_type.block_complex_B_2",
-          "trial_type.block_complex_B_3",
-          "trial_type.block_complex_B_4"
+          "trial_type.block_complex_A_1", "trial_type.block_complex_B_3"
         ],
-        "weights": [0.25, 0.25, 0.25, 0.25],
+        "weights": [0.5, 0.5],
         "type": "t"
       }
     ]
