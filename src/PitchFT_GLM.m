@@ -61,5 +61,10 @@ toc;
 bidsFFX('specifyAndEstimate', opt, FWHM);
 bidsFFX('contrasts', opt, FWHM);
 
+% in the future below would work for RUN level
+% % get results thresholded + binarize 
+% opt =  getOptionPitchFT_results();
 % bidsResults(opt, FWHM);
+
+
 % isMVPA = false;

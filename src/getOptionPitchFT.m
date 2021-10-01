@@ -70,6 +70,10 @@ function opt = getOptionPitchFT()
   opt.model.file =  ...
         fullfile(fileparts(mfilename('fullpath')), '..', ...
                  'model', 'model-PitchFT_smdl.json');
+  
+  % assign QA false for FFX analysis if you have not run QA
+  opt.glm.QA.do = false;
+  
   %% DO NOT TOUCH
   opt = checkOptions(opt);
   saveOptions(opt);
