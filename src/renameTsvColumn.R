@@ -9,7 +9,7 @@ source(pathToFunc)
 
 
 # i'd like to change the .tsv files in derivatives folder (could be raw folder instead)
-bidsRoot <- '/Users/battal/Cerens_files/fMRI/Processed/RhythmCateg/PitchFT/derivatives/cpp_spm/sub-012' 
+bidsRoot <- '/Users/battal/Cerens_files/fMRI/Processed/RhythmCateg/PitchFT/derivatives/cpp_spm/sub-001' 
 taskName <- 'PitchFT' 
 
 taskEventsFiles <- bidsr_queryEvents(bidsRoot = bidsRoot, 
