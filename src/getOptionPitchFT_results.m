@@ -1,4 +1,4 @@
-function opt =  getOptionPitchFT_results()
+function opt =  getOptionPitchFT_results(contrastName, pvalue)
   % 
   % (C) Copyright 2021 Remi Gau
 
@@ -23,22 +23,22 @@ function opt =  getOptionPitchFT_results()
   % Specify the result to compute
   opt.result.Steps(1) = returnDefaultResultsStructure();
 
-  opt.result.Steps(1).Level = 'run';
+  opt.result.Steps(1).Level = 'subject';
 
-  opt.result.Steps(1).Contrasts(1).Name = 'Run1_A1_gt_B3';
+  opt.result.Steps(1).Contrasts(1).Name = contrastName; %'A1_gt_B3_run_1'
 
   opt.result.Steps(1).Contrasts(1).MC =  'none';
-  opt.result.Steps(1).Contrasts(1).p = 0.001;
-  opt.result.Steps(1).Contrasts(1).k = 5;
+  opt.result.Steps(1).Contrasts(1).p = pvalue; %0.001
+  opt.result.Steps(1).Contrasts(1).k = 0;
 
   % Specify how you want your output (all the following are on false by default)
-  opt.result.Steps(1).Output.png = true();
-  opt.result.Steps(1).Output.csv = true();
+  opt.result.Steps(1).Output.png = false(); %true();
+  opt.result.Steps(1).Output.csv = false(); %true();
   opt.result.Steps(1).Output.thresh_spm = true();
   opt.result.Steps(1).Output.binary = true();
 
   % MONTAGE FIGURE OPTIONS
-  opt.result.Steps(1).Output.montage.do = true();
+  opt.result.Steps(1).Output.montage.do = false(); %true();
   opt.result.Steps(1).Output.montage.slices = -26:3:6; % in mm -12:4:60;
   opt.result.Steps(1).Output.montage.orientation = 'axial';
   

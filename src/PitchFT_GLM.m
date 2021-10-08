@@ -62,9 +62,30 @@ bidsFFX('specifyAndEstimate', opt, FWHM);
 bidsFFX('contrasts', opt, FWHM);
 
 % in the future below would work for RUN level
-% % get results thresholded + binarize 
-% opt =  getOptionPitchFT_results();
-% bidsResults(opt, FWHM);
+% % get results thresholded + binarize
+FWHM = 2;
+opt =  getOptionPitchFT_results();
+bidsResults(opt, FWHM);
+
+% loop to calculate all the contrasts across runs
+pvalues =[0.001, 0.0001, 0.00001];
+baseContrastName = 'A1_gt_B3_run_';
+runs = 1:9;
+for ipvalue = 1:length(pvalues)
+    
+    pvalue = pvalues(ipvalue);
+    
+    for iRun = runs
+        
+        contrastName = [baseContrastName, num2str(runs(iRun))];
+        opt =  getOptionPitchFT_results(contrastName, pvalue);
+        
+        %caulate the tmaps 
+        bidsResults(opt, FWHM);
+        
+    end
+end
+
 
 
 % isMVPA = false;
