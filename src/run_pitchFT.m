@@ -32,8 +32,10 @@ opt.maskType = 'whole-brain';
 [opt.funcMask, opt.maskType] = getMaskFile(opt);
 
 % want to save each run FFT results
-opt.saveEachRun = 0;
-for iSmooth = [0 2 6] % 0 2 3 or 6mm smoothing
+opt.saveEachRun = 1;
+% do not save/run FT on averaged RUNs
+opt.calculateAverage = 0;
+for iSmooth = 2 % 0 2 3 or 6mm smoothing
 
   opt.FWHM = iSmooth;
 
@@ -41,9 +43,19 @@ for iSmooth = [0 2 6] % 0 2 3 or 6mm smoothing
   calculateSNR(opt);
 end
 
+
 %%
 % group analysis - for now only in MNI
 % individual space would require fsaverage
 opt.nStepsPerPeriod = 4;
 opt.FWHM = 0;
 opt = groupAverageSNR(opt);
+
+
+% calculate Dice coeff across FT runs
+opt.FWHM = 2;
+opt.nStepsPerPeriod = 4;
+opt.maskType = 'whole-brain';
+opt.anatMask = 0;
+contrastName = 'A1GtB3Run'; %bids name of the GLM contrast
+[allCoeff, meanCoeff] = calculateDiceCoeffFT(opt, FWHM, contrastName);

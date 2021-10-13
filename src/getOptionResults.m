@@ -1,4 +1,4 @@
-function opt =  getOptionPitchFT_results(contrastName, pvalue)
+function opt =  getOptionResults(contrastName, pvalue)
   %
   % (C) Copyright 2021 Remi Gau
 

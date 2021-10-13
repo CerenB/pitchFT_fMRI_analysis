@@ -89,7 +89,7 @@ for ipvalue = 1:length(pvalues)
     contrastName = [baseContrastName, num2str(runs(iRun))];
 
     % define the contrast + threshold
-    opt =  getOptionPitchFT_results(contrastName, pvalue);
+    opt =  getOptionResults(contrastName, pvalue);
 
     % calculate the tmaps +binarised masks
     bidsResults(opt, FWHM);
@@ -103,7 +103,7 @@ end
 % parameters.
 %
 % read the binarised masks and calculate dice coeff across runs
-opt = getOptionPitchFT_results('A1_gt_B3_run_1', 0.001);
+opt = getOptionResults('A1_gt_B3_run_1', 0.001);
 % opt = getOptionPitchFT_results(contrastName, pvalue);
 FWHM = 2;
 [allCoeff, meanCoeff] = calculateDiceCoeff(opt, FWHM);
