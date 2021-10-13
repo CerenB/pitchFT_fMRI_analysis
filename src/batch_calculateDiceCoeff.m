@@ -50,12 +50,8 @@ for iSub = 1:numel(opt.subjects)
     % if bidsResults work to create desired contrast, use below:
     filePattern = returnName(subLabel, result, opt);
 
-   % patternTmap = [filePattern, '_spmT.nii'];
     patternBinary = [filePattern, '_mask.nii'];
 
-   % tMapFiles = dir(fullfile(imagePath, patternTmap));
-   % tMapFiles([tMapFiles.isdir]) = [];
-    
     binaryMapFiles = dir(fullfile(imagePath, patternBinary));
     binaryMapFiles([binaryMapFiles.isdir]) = [];
 
@@ -70,11 +66,6 @@ for iSub = 1:numel(opt.subjects)
        image1 = fullfile(imagePath, binaryMapFiles(indices(iPairs,1)).name);
        image2 = fullfile(imagePath, binaryMapFiles(indices(iPairs,2)).name);
 
-%        % check if you can read them
-%        hdr1 = spm_vol(image1);
-%        img1 = spm_read_vols(hdr1);
-%        hdr2 = spm_vol(image2);
-%        img2 = spm_read_vols(hdr2);
        
        coeff(iPairs) = nii_dice(image1, image2);
        fprintf('Dice coeff of Sub%d Run%d and Run%d is %f\n', iSub, ...
