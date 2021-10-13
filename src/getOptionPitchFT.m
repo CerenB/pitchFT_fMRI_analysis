@@ -12,7 +12,7 @@ function opt = getOptionPitchFT()
   % group of subjects to analyze
   opt.groups = {''};
   % suject to run in each group
-  opt.subjects = {'001'};
+  opt.subjects = {'001', '002', '003', '004', '005', '006'};
 % '001', '002', '003', '004', '005', '006',...
 %                   '007', '008', '009', '010', '011', '012'
 
@@ -39,8 +39,8 @@ function opt = getOptionPitchFT()
   % Voxel dimensions for resampling at normalization of functional data or leave empty [ ].
   opt.funcVoxelDims = [2.6 2.6 2.6];
 
-  opt.parallelize.do = true;
-  opt.parallelize.nbWorkers = 4;
+  opt.parallelize.do = false;
+  opt.parallelize.nbWorkers = 1;
   opt.parallelize.killOnExit = true;
 
   %% set paths

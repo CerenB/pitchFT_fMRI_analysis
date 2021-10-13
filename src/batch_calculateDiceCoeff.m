@@ -1,40 +1,45 @@
-function batch_calculateDiceCoeff
-% this function should be a batch for calculating dice coefficient
-% last edit on 29.09.2021
+function meanCoeff = batch_calculateDiceCoeff(opt, FWHM)
+% this function is a batch for calculating dice coefficient
+% last edit on 08.10.2021
+% we already prepared spmT maps (thresholded + binarised) by using bidsResults 
+% now, we will read/load binarised masks and calculate dice coeff across 
+% subjects
 
-% find the 
-
-
-% this is a small function to read/load & rename the t-maps and convert
-% them into z-maps. 
-
-%resultReport = opt.result.Steps;
-opt = getOptionPitchFT_results;
-thresholdP = opt.result.Steps.Contrasts.p;
-
-% which smoothing/files/spm.mat to take?
-FWHM = 2; 
-
-% all pitch 
-df = 873; 
-
-% run number
-runNum = 9; % if we decide make loop for all the tmaps
-
-
+% % TO-DO
 % check if tmap --> zmap --> binarisation 
 % is different than tmap --> binarisation (for dice coeff)
 
-% making contrast in contrast manager:
-% Run1_A1_gt_B3: 1 0 -1 (spmT_0044.nii)
-% Run2_A1_gt_B3: 0 0 0 0 0 0 0 0 0 0 1 0 -1 (spmT_0045.nii)
+% all pitch 
+% df = 873; 
 
-% note that thresholded SPM saving option gives NaN values in thresholded
-% spmT map which causes a crash in tmap->zmap conversion.
-% a work around would be: first convert to zmap and then threshold it
-% another work around is binarise the tmaps after thresholding it and do
-% not use zmap conversion 
+% run number
+runNb = 9; % important to make pairs of runs to calculate dice
 
+% load results;
+result = opt.result.Steps;
+contrastName = bids.internal.camel_case(result.Contrasts(1).Name(1:end-1));
+
+
+% save path
+outputDir = returnOutputPath(opt, FWHM, contrastName);
+
+% rename pvalue for using saving results
+pvalue = num2str(result.Contrasts(1).p);
+pvalue = strrep(pvalue,'.', '');
+
+% save results
+savefileMat = fullfile(outputDir, ...
+                         ['WholeBrain', ...
+                          '_p-', pvalue, ...
+                          '_', datestr(now, 'yyyymmddHHMM'), '.mat']);
+
+savefileCsv = fullfile(outputDir, ...
+                         ['WholeBrain', ...
+                          '_p-', pvalue, ...
+                          '_', datestr(now, 'yyyymmddHHMM'), '.csv']);
+
+% here we read already thresholded & binarize tmaps (assuming that tmaps
+% would not be different than zmaps as long as the threshold is the same 
 
 for iSub = 1:numel(opt.subjects)
     
@@ -43,60 +48,105 @@ for iSub = 1:numel(opt.subjects)
     imagePath =  getFFXdir(subLabel, FWHM, opt);
     
     % if bidsResults work to create desired contrast, use below:
-    %imageName = returnName(subLabel, resultReport, opt);
-    % %image = 'sub-001_task-RhythmBlock_space-MNI_desc-AllCateg_label-0023_p-0001_k-0_MC-none_spmT.nii';
+    filePattern = returnName(subLabel, result, opt);
 
-    % for now use manual definition of Tmaps
-    imageName1 = 'pvalue_0001_spmT_0044.nii';
+   % patternTmap = [filePattern, '_spmT.nii'];
+    patternBinary = [filePattern, '_mask.nii'];
+
+   % tMapFiles = dir(fullfile(imagePath, patternTmap));
+   % tMapFiles([tMapFiles.isdir]) = [];
     
-%     % if bidsResults work to create desired contrast, use below:
-%     % add suffix to load image
-%     imageNameLoad = [imageName, '_spmT.nii'];
-%     % save image as
-%     imageNameSave = [imageName, '_spmZ.nii'];
-
-%     hdr1 = spm_vol(fullfile(imagePath, imageNameLoad));
-
-    % do the t to z-map conversion here
-    outputImage = convertTstatsToZscore(imageName1, imagePath, df);
+    binaryMapFiles = dir(fullfile(imagePath, patternBinary));
+    binaryMapFiles([binaryMapFiles.isdir]) = [];
 
     
-    % then save the z-map
-    % do we need this part? convertTstatsToZscore is already saving
+    % make all the combinations of runs 
+    indices = nchoosek(1:runNb,2);
+    coeff = nan(1, length(indices));
     
-    
-    
-    
+    count = 1;
+    for iPairs = 1:length(indices)
+        
+       image1 = fullfile(imagePath, binaryMapFiles(indices(iPairs,1)).name);
+       image2 = fullfile(imagePath, binaryMapFiles(indices(iPairs,2)).name);
+
+%        % check if you can read them
+%        hdr1 = spm_vol(image1);
+%        img1 = spm_read_vols(hdr1);
+%        hdr2 = spm_vol(image2);
+%        img2 = spm_read_vols(hdr2);
+       
+       coeff(iPairs) = nii_dice(image1, image2);
+       fprintf('Dice coeff of Sub%d Run%d and Run%d is %f\n', iSub, ...
+           indices(iPairs,1), indices(iPairs,2), coeff(iPairs));
+       
+       allCoeff(count).coeff = coeff(iPairs);
+       allCoeff(count).subID = iSub;
+       allCoeff(count).run1 = indices(iPairs,1);
+       allCoeff(count).run2 = indices(iPairs,2);
+       allCoeff(count).label = contrastName;
+       allCoeff(count).img1 = binaryMapFiles(indices(iPairs,1)).name;
+       allCoeff(count).img2 = binaryMapFiles(indices(iPairs,2)).name;
+       count = count + 1;
+    end
+
+    % calculate the mean dice coeff
+    meanCoeff(iSub).coeff =  mean(coeff);
+    meanCoeff(iSub).subID = iSub;
+    meanCoeff(iSub).pvalue = result.Contrasts(1).p;
+
+
+    % save the dice coeff value
+    save(savefileMat,'meanCoeff','allCoeff');
+    % only save the mean values for plotting 
+    writetable(struct2table(meanCoeff), savefileCsv);
 end
 
 end
 
 
-function name = returnName(sub, result, opt)
+function baseName = returnName(subLabel, result, opt)
+% returns base name to find which tmaps we are interested in
 
-contrastName = result.Contrasts(1).Name;
+contrastName = bids.internal.camel_case(result.Contrasts(1).Name(1:end-1));
 correction = result.Contrasts(1).MC;
-pvalue = result.Contrasts(1).p;
+pvalue = bids.internal.camel_case(num2str(result.Contrasts(1).p));
 clusterSize = result.Contrasts(1).k;
-tLabel = '0023';
 
-name = ['sub-', sub, ...
+baseName = ['sub-', subLabel, ...
     '_task-', opt.taskName, ...
     '_space-', opt.space, ...
     '_desc-', contrastName, ...
-    '_label-', tLabel, ...
-    '_p-', num2str(pvalue), ...
+    '*_label-', '*', ...
+    '_p-', pvalue, ...
     '_k-', num2str(clusterSize), ...
     '_MC-', correction];
 
-name = strrep(name,'.', '');
+baseName = strrep(baseName,'.', '');
 
 
 end
 
 
 
+function outputDir = returnOutputPath(opt,FWHM, contrastName)
+% makes directory is not there
+main = fullfile(opt.derivativesDir, '..', 'rnb_fft','group', 'dice-coeff');
 
+if ~exist(main, 'dir')
+    mkdir(main)
+end
+
+outputDir = fullfile(main,['task-', opt.taskName, ...
+                            '_space-', opt.space, ...
+                            '_FWHM-', num2str(FWHM), ...
+                            '_desc-', contrastName]);
+
+if ~exist(outputDir, 'dir')
+    mkdir(outputDir);
+end
+
+end
 
 
 

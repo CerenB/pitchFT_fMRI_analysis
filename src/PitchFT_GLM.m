@@ -7,6 +7,9 @@ addpath(pth);
 % add FFT analysis lib
 addpath(genpath(fullfile(pth, 'lib', 'FFT_fMRI_analysis')));
 
+% add dice coeff function repo
+addpath(genpath('/Users/battal/Documents/GitHub/CPPLab/spmScripts'));
+
 %% set paths
 % set spm
 [~, hostname] = system('hostname');
@@ -61,16 +64,24 @@ toc;
 bidsFFX('specifyAndEstimate', opt, FWHM);
 bidsFFX('contrasts', opt, FWHM);
 
-% in the future below would work for RUN level
-% % get results thresholded + binarize
-FWHM = 2;
-opt =  getOptionPitchFT_results();
-bidsResults(opt, FWHM);
+%% DICE Coeff Calculation
+% % gets result thresholded + binarize, then calculate the dice coeff
+
 
 % loop to calculate all the contrasts across runs
+
+% note that thresholded SPM saving option gives NaN values in thresholded
+% spmT map which causes a crash in tmap->zmap conversion.
+% a work around would be: first convert to zmap and then threshold it
+% another work around is binarise the tmaps after thresholding it and do
+% not use zmap conversion. That is what we are doing
+
+FWHM = 2;
+
 pvalues =[0.001, 0.0001, 0.00001];
 baseContrastName = 'A1_gt_B3_run_';
 runs = 1:9;
+
 for ipvalue = 1:length(pvalues)
     
     pvalue = pvalues(ipvalue);
@@ -78,14 +89,41 @@ for ipvalue = 1:length(pvalues)
     for iRun = runs
         
         contrastName = [baseContrastName, num2str(runs(iRun))];
+        
+        %define the contrast + threshold
         opt =  getOptionPitchFT_results(contrastName, pvalue);
         
-        %caulate the tmaps 
+        %calculate the tmaps +binarised masks
         bidsResults(opt, FWHM);
         
     end
 end
 
+% assuming the previous step is independent (was performed in another 
+% matlab session) of the below step.
+% so we need to call getOptionPitchFT_results again to load the desired
+% parameters.
+% 
+% read the binarised masks and calculate dice coeff across runs
+opt = getOptionPitchFT_results('A1_gt_B3_run_1', 0.00001);
+% opt = getOptionPitchFT_results(contrastName, pvalue);
+FWHM = 2;
+batch_calculateDiceCoeff(opt,FWHM)
 
+%% Calculate the peak SNR and num of supr-thresholded voxels
+% that would be calculating the SNR in GLM and FFT analysis both.
+% in here we will look at GLM one
 
-% isMVPA = false;
+% peak SNR
+
+% whole cortex - binarise mask voxel count for A1 vs. B3 contrast (subject
+% level)
+FWHM = 2;
+pvalue = 0.0001; %from Gao etal.,2018
+opt =  getOptionPitchFT_results('A1_gt_B3', pvalue);
+
+%calculate the tmaps +binarised masks
+bidsResults(opt, FWHM);
+
+% then find the binarise contrast image + count
+% such sum(image(:));
