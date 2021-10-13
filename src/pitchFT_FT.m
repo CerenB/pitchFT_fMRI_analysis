@@ -25,21 +25,20 @@ run ../lib/CPP_BIDS_SPM_pipeline/initCppSpm.m;
 % get all the parameters needed
 opt = getOptionPitchFT();
 
-
 %% FFT analysis
 
 opt.anatMask = 0;
-opt.maskType = 'whole-brain'; 
+opt.maskType = 'whole-brain';
 [opt.funcMask, opt.maskType] = getMaskFile(opt);
 
 % want to save each run FFT results
 opt.saveEachRun = 0;
 for iSmooth = [0 2 6] % 0 2 3 or 6mm smoothing
-    
-    opt.FWHM = iSmooth; 
-    
-    opt.nStepsPerPeriod = 4;
-    calculateSNR(opt);
+
+  opt.FWHM = iSmooth;
+
+  opt.nStepsPerPeriod = 4;
+  calculateSNR(opt);
 end
 
 %%
@@ -48,8 +47,3 @@ end
 opt.nStepsPerPeriod = 4;
 opt.FWHM = 0;
 opt = groupAverageSNR(opt);
-
-
-
-
-

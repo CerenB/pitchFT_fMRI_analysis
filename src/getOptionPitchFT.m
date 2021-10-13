@@ -12,9 +12,9 @@ function opt = getOptionPitchFT()
   % group of subjects to analyze
   opt.groups = {''};
   % suject to run in each group
-  opt.subjects = {'001', '002', '003', '004', '005', '006'};
-% '001', '002', '003', '004', '005', '006',...
-%                   '007', '008', '009', '010', '011', '012'
+  opt.subjects = {'007', '008', '009', '010', '011', '012'};
+  % '001', '002', '003', '004', '005', '006',...
+  %                   '007', '008', '009', '010', '011', '012'
 
   % Uncomment the lines below to run preprocessing
   % - don't use realign and unwarp
@@ -46,7 +46,7 @@ function opt = getOptionPitchFT()
   %% set paths
   [~, hostname] = system('hostname');
   if strcmp(deblank(hostname), 'tux')
-    opt.dataDir = fullfile('/datadisk/data/RhythmCateg-fMRI/RhythmBlock'); 
+    opt.dataDir = fullfile('/datadisk/data/RhythmCateg-fMRI/RhythmBlock');
     opt.derivativesDir = fullfile( ...
                                   '/datadisk/data/RhythmCateg-fMRI/PitchFT', ...
                                   'cpp_spm');
@@ -56,24 +56,23 @@ function opt = getOptionPitchFT()
                            '..', '..', '..', 'raw');
     opt.derivativesDir = fullfile(opt.dataDir, '..', ...
                                   'derivatives', 'cpp_spm');
-                              
+
     opt.roiDir = fullfile(fileparts(mfilename('fullpath')),  ...
-                           '..', '..', '..','..', 'RhythmCateg_ROI');
+                          '..', '..', '..', '..', 'RhythmCateg_ROI');
   end
-  
-  
+
   % Suffix output directory for the saved jobs
   opt.jobsDir = fullfile( ...
                          opt.dataDir, '..', 'derivatives', ...
                          'cpp_spm', 'JOBS', opt.taskName);
-                     
+
   opt.model.file =  ...
         fullfile(fileparts(mfilename('fullpath')), '..', ...
                  'model', 'model-PitchFT_smdl.json');
-  
+
   % assign QA false for FFX analysis if you have not run QA
   opt.glm.QA.do = false;
-  
+
   %% DO NOT TOUCH
   opt = checkOptions(opt);
   saveOptions(opt);
