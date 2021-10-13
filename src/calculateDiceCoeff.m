@@ -82,7 +82,8 @@ function [allCoeff, meanCoeff] = calculateDiceCoeff(opt, FWHM)
     end
 
     % calculate the mean dice coeff
-    meanCoeff(iSub).coeff =  mean(coeff);
+    meanCoeff(iSub).coeff =  mean(coeff, 'omitnan');
+    meanCoeff(iSub).coeffisNan =  mean(coeff);
     meanCoeff(iSub).subID = iSub;
     meanCoeff(iSub).pvalue = result.Contrasts(1).p;
 
