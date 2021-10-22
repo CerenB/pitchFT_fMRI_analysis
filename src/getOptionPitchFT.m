@@ -12,7 +12,7 @@ function opt = getOptionPitchFT()
   % group of subjects to analyze
   opt.groups = {''};
   % suject to run in each group
-  opt.subjects = {'007', '008', '009', '010', '011', '012'};
+  opt.subjects = {'001'};
   % '001', '002', '003', '004', '005', '006',...
   %                   '007', '008', '009', '010', '011', '012'
 
@@ -22,7 +22,7 @@ function opt = getOptionPitchFT()
 
   % we stay in native space (that of the T1)
   % - in "native" space: don't do normalization
-  opt.space = 'MNI'; % 'individual', 'MNI'
+  opt.space = 'individual'; % 'individual', 'MNI'
 
   % task to analyze
   opt.taskName = 'PitchFT';
@@ -57,8 +57,8 @@ function opt = getOptionPitchFT()
     opt.derivativesDir = fullfile(opt.dataDir, '..', ...
                                   'derivatives', 'cpp_spm');
 
-    opt.roiDir = fullfile(fileparts(mfilename('fullpath')),  ...
-                          '..', '..', '..', '..', 'RhythmCateg_ROI');
+    opt.dir.roi = fullfile(fileparts(mfilename('fullpath')),  ...
+                          '..', '..', '..', '..', 'RhythmCateg_ROI', 'hmat');
   end
 
   % Suffix output directory for the saved jobs
