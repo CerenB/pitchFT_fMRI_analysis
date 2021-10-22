@@ -1,4 +1,4 @@
-function [allCoeff, meanCoeff] = calculateDiceCoeffFT(opt, FWHM, contrastName)
+function [allCoeff, meanCoeff] = calculateDiceCoeffFT(opt, contrastName)
 
 % clear;
 % clc;
@@ -12,7 +12,7 @@ function [allCoeff, meanCoeff] = calculateDiceCoeffFT(opt, FWHM, contrastName)
 %%
 
 % save path
-outputDir = returnOutputPath(opt, FWHM, contrastName);
+outputDir = returnOutputPath(opt, opt.FWHM, contrastName);
   
 % save results
 savefileMat = fullfile(outputDir, ...
@@ -27,12 +27,24 @@ savefileCsv = fullfile(outputDir, ...
     '_p-All',  ...
     '_', datestr(now, 'yyyymmddHHMM'), '.csv']);
 
+savefileAllSubjectCsv = fullfile(outputDir, ...
+    ['AllSubjectWholeBrain_FFT', ...
+    '_N-', num2str(numel(opt.subjects)), ...
+    '_p-All',  ...
+    '_', datestr(now, 'yyyymmddHHMM'), '.csv']);
+
 maskType = opt.maskType;
 
 
 % to keep only values above a certain threshold
-pvalues = [0.001, 0.0001, 0.00001]; %correspond to z-values:
-threshold = [3.09, 3.72, 4.26];
+pvalues = [0.001, 0.0001, 0.00001, 0.000001, 0.0000001,...
+           0.00000000001, 0.0000000000001, ...
+           0.000000000000001, 0.00000000000000001, ...
+           0.0000000000000000001, 0.0000000000000000000001]; 
+%correspond to z-values:
+%threshold = round(abs(norminv(pvalues)),2);
+threshold = [3.09, 3.72, 4.26, 4.75, 5.2,...
+             6.71, 7.35, 7.94, 8.49, 9.01, 9.74];
     
 % here we read already thresholded & binarize tmaps (assuming that tmaps
 % would not be different than zmaps as long as the threshold is the same
@@ -67,7 +79,7 @@ for iSub = 1:numel(opt.subjects)
         % find mask/binarised images
         patternThres = strrep(num2str(threshold(iThres)), '.', '');
 
-        patternBinary = [maskType, '_SNR_', '*', patternThres, '_mask.nii'];
+        patternBinary = [maskType, '_SNR_', '*', 'z-', patternThres, '_mask.nii'];
         binaryMapFiles = dir(fullfile(imagePath, patternBinary));
         binaryMapFiles([binaryMapFiles.isdir]) = [];
         
@@ -81,7 +93,7 @@ for iSub = 1:numel(opt.subjects)
             
             image1 = fullfile(imagePath, binaryMapFiles(indices(iPairs, 1)).name);
             image2 = fullfile(imagePath, binaryMapFiles(indices(iPairs, 2)).name);
-            coeff(iPairs) = nii_dice(image1, image2);
+            [coeff(iPairs), voxNb1, voxNb2] = nii_dice(image1, image2);
             fprintf('Dice coeff of Sub%d Run%d and Run%d is %f\n', iSub, ...
                 indices(iPairs, 1), indices(iPairs, 2), coeff(iPairs));
             
@@ -89,6 +101,10 @@ for iSub = 1:numel(opt.subjects)
             allCoeff(count).subID = iSub;
             allCoeff(count).run1 = indices(iPairs, 1);
             allCoeff(count).run2 = indices(iPairs, 2);
+            allCoeff(count).voxelNb1 = voxNb1;
+            allCoeff(count).voxelNb2 = voxNb2;
+            allCoeff(count).zvalue = threshold(iThres);
+            allCoeff(count).pvalue = pvalues(iThres);
             allCoeff(count).label = contrastName;
             allCoeff(count).img1 = binaryMapFiles(indices(iPairs, 1)).name;
             allCoeff(count).img2 = binaryMapFiles(indices(iPairs, 2)).name;
@@ -108,8 +124,8 @@ for iSub = 1:numel(opt.subjects)
     save(savefileMat, 'meanCoeff', 'allCoeff');
     % only save the mean values for plotting
     writetable(struct2table(meanCoeff), savefileCsv);
-
-
+    
+    writetable(struct2table(allCoeff), savefileAllSubjectCsv);
     
 end
 

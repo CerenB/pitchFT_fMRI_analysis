@@ -86,6 +86,7 @@ function [allCoeff, meanCoeff] = calculateDiceCoeff(opt, FWHM)
     meanCoeff(iSub).coeffisNan =  mean(coeff);
     meanCoeff(iSub).subID = iSub;
     meanCoeff(iSub).pvalue = result.Contrasts(1).p;
+    
 
     % save the dice coeff value
     save(savefileMat, 'meanCoeff', 'allCoeff');

@@ -58,4 +58,6 @@ opt.nStepsPerPeriod = 4;
 opt.maskType = 'whole-brain';
 opt.anatMask = 0;
 contrastName = 'A1GtB3Run'; %bids name of the GLM contrast
-[allCoeff, meanCoeff] = calculateDiceCoeffFT(opt, FWHM, contrastName);
+[allCoeff, meanCoeff] = calculateDiceCoeffFT(opt,contrastName);
+
+
