@@ -1,4 +1,4 @@
-function outputImage = renameHmat(inputImage, opt)
+function outputImage = renameHmat(inputImage)
   %
   % give a HMAT mask a name that is more bids friendly
   %
