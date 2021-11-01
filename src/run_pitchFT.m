@@ -27,9 +27,8 @@ opt = getOptionPitchFT();
 
 %% FFT analysis
 
-opt.anatMask = 0;
 opt.maskType = 'whole-brain';
-[opt.funcMask, opt.maskType] = getMaskFile(opt);
+[opt.maskFile] = getMaskFile(opt);
 
 % want to save each run FFT results
 opt.saveEachRun = 1;
@@ -44,20 +43,53 @@ for iSmooth = 2 % 0 2 3 or 6mm smoothing
 end
 
 
-%%
-% group analysis - for now only in MNI
+%% group analysis
+% for now only in MNI
 % individual space would require fsaverage
 opt.nStepsPerPeriod = 4;
 opt.FWHM = 0;
 opt = groupAverageSNR(opt);
 
 
-% calculate Dice coeff across FT runs
+%% calculate Dice coeff across FT runs
 opt.FWHM = 2;
 opt.nStepsPerPeriod = 4;
 opt.maskType = 'whole-brain';
 opt.anatMask = 0;
 contrastName = 'A1GtB3Run'; %bids name of the GLM contrast
 [allCoeff, meanCoeff] = calculateDiceCoeffFT(opt,contrastName);
+
+
+%% let's do ROI-FFT
+%let's load masks
+opt.maskType = 'freesurfer';
+opt = getMaskFile(opt);
+% remember there's also opt.maskLabel with the roi names
+
+% let's calculate the FFT on those masks
+opt.FWHM = 2;
+opt.nStepsPerPeriod = 4;
+% want to save each run FFT results
+opt.saveEachRun = 1;
+% do not save/run FT on averaged RUNs
+opt.calculateAverage = 0;
+% ... and GO !
+calculateSNR(opt);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
