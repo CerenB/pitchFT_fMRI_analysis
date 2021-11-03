@@ -63,8 +63,9 @@ dof = 873;
 
         % convert tMap into zMap
         [tToZimg, outputName] = convertTstatsToZscore(glmFileName, dof);
+        fprintf('Zmap saved as %s\n', outputName);
         
-        disp(outputName);
+        % alternative is getting the 1 tvalue - please see below
         
       for iMask = 1:size(opt.maskFile,2)
         
@@ -76,12 +77,21 @@ dof = 873;
             maskType = [opt.maskType, '-', opt.maskLabel{iMask}];
         end
         
-        %get the mask name and path
+        %get the mask
         maskFileName = opt.maskFile{iSub, iMask};
         
+        %load the mask
+        maskHdr = spm_vol(maskFileName);
+        maskImg = spm_read_vols(maskHdr);
         
-        % put z/t image with iMask -- masking
-        
+%         % put z/t image with iMask -- masking
+%         tImg(~maskImg) = 0;
+%         
+%         % save zscore image
+%         tHdr.fname = spm_file(tHdr.fname, 'filename', 'maskedspmT_0068.nii');
+%         spm_write_vol(tHdr, tImg);
+% somewhere here take the tImg and after masking take the highest value and
+% convert that tvalue into z value
         
         % get the highest z-score for a given mask
         
@@ -100,8 +110,9 @@ end
 function outputImage = getTimage(results)
   % find the spmT.nii file that is already thresholded
   
-  contrastName = bids.internal.camel_case(results.Name);
-  pattern = ['^sub-.*.',contrastName,'_.*spmT.nii$'];
+%   contrastName = bids.internal.camel_case(results.Name);
+%   pattern = ['^sub-.*.',contrastName,'_.*spmT.nii$'];
+  pattern = 'spmT_0068.nii';
   outputImage = spm_select('FPList', results.dir, pattern);
 
 end
