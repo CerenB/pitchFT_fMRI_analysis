@@ -1,17 +1,13 @@
-function outputImage = convertTstatsToZscore(inputImgName, inputPath, df)
+function [img, outputName] = convertTstatsToZscore(inputImgName,  df)
   % mini function to convert t-stats to z-scores
 
-  % read the header
-  hdr = spm_vol(fullfile(inputPath, inputImgName));
   % load the image to be read t-stats
+  hdr = spm_vol(inputImgName);
   img = spm_read_vols(hdr);
 
-  % name the z-score .nii name
-  % threshold = strrep(num2str(threshold), '.', '');
-  % newName = ['pvalue_', threshold,'_', replace(inputImgName,'T', 'Z')];
+  % rename 
   newName = replace(inputImgName, 'T', 'Z');
   hdr.fname = spm_file(hdr.fname, 'filename', newName);
-  % hdr.fname = spm_file(hdr.fname, 'path', destinationDir);
 
   % rename the description as well
   newDescrip = [hdr.descrip, ' t->z converted'];
@@ -24,14 +20,7 @@ function outputImage = convertTstatsToZscore(inputImgName, inputPath, df)
   spm_write_vol(hdr, img);
 
   % output the file name
-  outputImage = hdr.fname;
+  outputName = hdr.fname;
 
 end
 
-% 'spmT_0019.nii'
-% 0019 : simple
-% 0020 : complex/nonmetric
-% 0023 : all sounds
-
-% all pitch
-% df = 873

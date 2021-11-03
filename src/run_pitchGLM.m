@@ -112,16 +112,20 @@ FWHM = 2;
 % that would be calculating the SNR in GLM and FFT analysis both.
 % in here we will look at GLM one
 
-% peak SNR
 
-% whole cortex - binarise mask voxel count for A1 vs. B3 contrast (subject
+
+% whole cortex - 
+% -- binarise mask voxel count for A1 vs. B3 contrast (subject
 % level)
+% -- spmT maps for A1 vs. B3 contrast 
 FWHM = 2;
-pvalue = 0.0001; % from Gao etal.,2018
-opt =  getOptionPitchFT_results('A1_gt_B3', pvalue);
-
+pvalue = 1e-04; % from Gao etal.,2018
+opt =  getOptionResults('A1_gt_B3', pvalue);
 % calculate the tmaps +binarised masks
 bidsResults(opt, FWHM);
 
 % then find the binarise contrast image + count
 % such sum(image(:));
+
+%
+

@@ -13,38 +13,41 @@ function opt =  getOptionResults(contrastName, pvalue)
 
   opt = getOptionPitchFT();
 
-  %   opt.model.file = fullfile( ...
-  %                             fileparts(mfilename('fullpath')), ...
-  %                             'models', ...
-  %                             'model-PitchFT_smdl.json');
-  %
-  %   opt.glm.QA.do = false;
 
   % Specify the result to compute
   opt.result.Steps(1) = returnDefaultResultsStructure();
 
   opt.result.Steps(1).Level = 'subject';
 
-  opt.result.Steps(1).Contrasts(1).Name = contrastName; % 'A1_gt_B3_run_1'
-
+  % these are function input variabls
+  opt.result.Steps(1).Contrasts(1).Name = contrastName; 
+  opt.result.Steps(1).Contrasts(1).p = pvalue;
+  
   opt.result.Steps(1).Contrasts(1).MC =  'none';
-  opt.result.Steps(1).Contrasts(1).p = pvalue; % 0.001
   opt.result.Steps(1).Contrasts(1).k = 0;
 
   % Specify how you want your output (all the following are on false by default)
-  opt.result.Steps(1).Output.png = false(); % true();
-  opt.result.Steps(1).Output.csv = false(); % true();
-  opt.result.Steps(1).Output.thresh_spm = true();
+  opt.result.Steps(1).Output.png = false(); 
+  opt.result.Steps(1).Output.csv = false();
+  opt.result.Steps(1).Output.thresh_spm = false();
   opt.result.Steps(1).Output.binary = true();
 
   % MONTAGE FIGURE OPTIONS
-  opt.result.Steps(1).Output.montage.do = false(); % true();
-  opt.result.Steps(1).Output.montage.slices = -26:3:6; % in mm -12:4:60;
+  opt.result.Steps(1).Output.montage.do = false(); 
+  opt.result.Steps(1).Output.montage.slices = 12:4:54; % in mm -12:4:60  -26:3:6
   opt.result.Steps(1).Output.montage.orientation = 'axial';
 
   % will use the MNI T1 template by default but the underlay image can be
   % changed.
-  opt.result.Steps(1).Output.montage.background = ...
-      fullfile(spm('dir'), 'canonical', 'avg152T1.nii,1');
+%   subID = ['sub-', opt.subjects{1}];
+%   
+%   opt.result.Steps(1).Output.montage.background = ...
+%       fullfile(opt.derivativesDir, subID, 'ses-001', 'anat',[subID,'_ses-001_T1w.nii,1']);
+  
+%   if strcmp(opt.space, 'MNI')
+        opt.result.Steps(1).Output.montage.background = ...
+        fullfile(spm('dir'), 'canonical', 'avg152T1.nii,1');
+%   end
+  
 
 end
