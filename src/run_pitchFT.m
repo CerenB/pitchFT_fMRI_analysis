@@ -70,17 +70,24 @@ opt = getMaskFile(opt);
 opt.FWHM = 2;
 opt.nStepsPerPeriod = 4;
 % want to save each run FFT results
-opt.saveEachRun = 1;
+opt.saveEachRun = 0;
 % do not save/run FT on averaged RUNs
-opt.calculateAverage = 0;
+opt.calculateAverage = 1;
+% do not save harmonic.nii file
+opt.saveHarmonicImg.do = 0;
 % ... and GO !
 calculateSNR(opt);
 
+%% now read max z-scores across rois
+% ROIs
+% mask the whole-brain spmT map with ROIs to get highest z score values
+% 1. peak SNR
+opt.maskType = 'freesurfer'; %'hmat'
+opt = getMaskFile(opt);
 
-
-
-
-
+opt.FWHM = 2;
+opt.nStepsPerPeriod = 4;
+calculatePeakSNR(opt);
 
 
 
