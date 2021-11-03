@@ -5,8 +5,14 @@ function [img, outputName] = convertTstatsToZscore(inputImgName,  df)
   hdr = spm_vol(inputImgName);
   img = spm_read_vols(hdr);
 
+  %replace nans with zeros
+  img(isnan(img(:)))=0;
+
   % rename 
-  newName = replace(inputImgName, 'T', 'Z');
+  [~, name, ext]= fileparts(inputImgName);
+  newName = replace(name, 'T', 'Z');
+  newName = [newName,ext];
+  
   hdr.fname = spm_file(hdr.fname, 'filename', newName);
 
   % rename the description as well
