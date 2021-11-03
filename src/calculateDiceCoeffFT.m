@@ -56,7 +56,7 @@ for iSub = 1:numel(opt.subjects)
    
     % find the output directory
      subLabel = opt.subjects{iSub};
-     imagePath = createOutputDirectory(opt, subLabel);
+     imagePath = getFFTdir(opt, subLabel);
 
      % find zMap to binarise
      patternZMap = [maskType, '*SNR*_bold.nii'];
