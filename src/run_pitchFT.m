@@ -83,13 +83,22 @@ calculateSNR(opt);
 % mask the whole-brain spmT map with ROIs to get highest z score values
 % 1. peak SNR
 opt.maskType = 'freesurfer'; %'hmat'
+% opt.maskType = 'whole-brain'; % this is for calculating full-brain
+% z-score
 opt = getMaskFile(opt);
 
+% this is where we stop - still calculatePeakSNR is in WIP
 opt.FWHM = 2;
 opt.nStepsPerPeriod = 4;
 calculatePeakSNR(opt);
 
-
+%% group level visualisation - threshold and save the maps 
+% later on workbench to visualise 
+opt.nStepsPerPeriod = 4;
+opt.FWHM = 6;
+pvalue = 1e-3; % 1e-6;
+opt.save.zmap = true;
+groupLevelzMapThreshold(opt, pvalue)
 
 
 
