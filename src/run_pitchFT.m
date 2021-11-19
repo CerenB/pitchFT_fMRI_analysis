@@ -90,13 +90,15 @@ opt = getMaskFile(opt);
 % this is where we stop - still calculatePeakSNR is in WIP
 opt.FWHM = 2;
 opt.nStepsPerPeriod = 4;
-calculatePeakSNR(opt);
+% for pitchFT the degrees of freedom
+dof = 873; 
+calculatePeakSNR(opt, pvalue, dof);
 
 %% group level visualisation - threshold and save the maps 
 % later on workbench to visualise 
 opt.nStepsPerPeriod = 4;
 opt.FWHM = 6;
-pvalue = 1e-3; % 1e-6;
+pvalue = 1e-6; % 1e-6; 1e-3
 opt.save.zmap = true;
 groupLevelzMapThreshold(opt, pvalue)
 

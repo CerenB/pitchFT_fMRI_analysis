@@ -1,4 +1,4 @@
-function calculatePeakSNR(opt, pvalue)
+function calculatePeakSNR(opt, pvalue, dof)
 
 % pvalue = 1e-4;
 
@@ -33,8 +33,6 @@ FWHM = opt.FWHM;
 %cut off threshold for pvalue
 threshold =  round(abs(norminv(pvalue)),2);
 
-% for pitchFT the degrees of freedom
-dof = 873; 
 
     for iSub = 1:numel(opt.subjects)
 
@@ -51,6 +49,12 @@ dof = 873;
         % threshold image with z-conversion of p<1e-4 
         zImg = zImg > threshold;
         
+        % if option.save zmap correct save thresholded map
+         % save zscore image
+        if opt.save.zmap
+           saveThresholdedImage(zImg, zHdr, newName);
+        end
+        
         % glm dir
         glmDir =  getFFXdir(subLabel, FWHM, opt);
         results = opt.result.Steps.Contrasts;
@@ -66,6 +70,7 @@ dof = 873;
         fprintf('Zmap saved as %s\n', outputName);
         
         % alternative is getting the 1 tvalue - please see below
+        %
         
       for iMask = 1:size(opt.maskFile,2)
         
@@ -124,5 +129,16 @@ pattern = '^whole-brain_AvgZTarget_.*bold.nii$';
 outputImage = spm_select('FPList', fftDir, pattern);
 
 
+
+end
+
+function saveThresholdedImage (img, hdr, newName)
+
+ext = '.nii';
+newName = [newName,ext];
+
+hdr.fname = spm_file(hdr.fname, 'filename', newName);
+
+spm_write_vol(hdr, img);
 
 end
